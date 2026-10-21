@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="head(pageTitle)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="referrer" content="same-origin">
+    <title th:text="${pageTitle + ' · ' + systemName}">School Documents Request System</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.3.8/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap-icons/1.13.1/font/bootstrap-icons.min.css}">
+    <link rel="stylesheet" th:href="@{/css/fonts.css}">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <link rel="icon" th:href="@{/images/favicon.svg}" type="image/svg+xml">
+</head>
+<body>
+
+<!-- ============================================================ brand -->
+<th:block th:fragment="brand">
+    <div class="brand-mark">
+        <span class="brand-seal" aria-hidden="true">SJC</span>
+        <span>
+            <span class="brand-name" th:text="${institutionName}">Saint Jude College Manila</span>
+            <span class="brand-sub">Records Office</span>
+        </span>
+    </div>
+</th:block>
+
+<!-- =========================================================== sidebar -->
+<aside class="sidebar" th:fragment="sidebar" aria-label="Main navigation">
+    <div class="sidebar-brand">
+        <div th:replace="~{fragments/layout :: brand}"></div>
+    </div>
+
+    <nav class="sidebar-nav">
+        <!-- Student -->
+        <th:block th:if="${currentUser != null and currentUser.role.toString() == 'STUDENT'}">
+            <div class="nav-section">Student</div>
+            <a th:href="@{/student/dashboard}" th:classappend="${activeNav == 'dashboard'} ? 'active'">
+                <i class="bi bi-grid-1x2" aria-hidden="true"></i> Dashboard
+            </a>
+            <a th:href="@{/student/requests/new}" th:classappend="${activeNav == 'new'} ? 'active'">
+                <i class="bi bi-file-earmark-plus" aria-hidden="true"></i> New request
+            </a>
+            <a th:href="@{/student/requests}" th:classappend="${activeNav == 'requests'} ? 'active'">
+                <i class="bi bi-file-text" aria-hidden="true"></i> My requests
+            </a>
+            <a th:href="@{/notifications}" th:classappend="${activeNav == 'notifications'} ? 'active'">
+                <i class="bi bi-bell" aria-hidden="true"></i> Notifications
+                <span class="nav-count" th:if="${unreadCount > 0}" th:text="${unreadCount}">3</span>
+            </a>
+            <a th:href="@{/profile}" th:classappend="${activeNav == 'profile'} ? 'active'">
+                <i class="bi bi-person" aria-hidden="true"></i> My profile
+            </a>
+        </th:block>
+
+        <!-- Registrar staff -->
+        <th:block th:if="${currentUser != null and currentUser.role.toString() == 'STAFF'}">
+            <div class="nav-section">Registrar</div>
+            <a th:href="@{/staff/dashboard}" th:classappend="${activeNav == 'dashboard'} ? 'active'">
+                <i class="bi bi-grid-1x2" aria-hidden="true"></i> Dashboard
+            </a>
+            <a th:href="@{/staff/requests}" th:classappend="${activeNav == 'requests'} ? 'active'">
+                <i class="bi bi-file-text" aria-hidden="true"></i> Request queue
+            </a>
+            <a th:href="@{/staff/reports}" th:classappend="${activeNav == 'reports'} ? 'active'">
+                <i class="bi bi-clipboard-data" aria-hidden="true"></i> Reports
+            </a>
+            <a th:href="@{/notifications}" th:classappend="${activeNav == 'notifications'} ? 'active'">
+                <i class="bi bi-bell" aria-hidden="true"></i> Notifications
+                <span class="nav-count" th:if="${unreadCount > 0}" th:text="${unreadCount}">3</span>
+            </a>
+            <a th:href="@{/profile}" th:classappend="${activeNav == 'profile'} ? 'active'">
+                <i class="bi bi-person" aria-hidden="true"></i> My profile
+            </a>
+        </th:block>
+
+        <!-- Administrator -->
+        <th:block th:if="${currentUser != null and currentUser.role.toString() == 'ADMIN'}">
+            <div class="nav-section">Administration</div>
+            <a th:href="@{/admin/dashboard}" th:classappend="${activeNav == 'dashboard'} ? 'active'">
+                <i class="bi bi-grid-1x2" aria-hidden="true"></i> Dashboard
+            </a>
+            <a th:href="@{/admin/approvals}" th:classappend="${activeNav == 'approvals'} ? 'active'">
+                <i class="bi bi-shield-check" aria-hidden="true"></i> Approval queue
+            </a>
+            <a th:href="@{/admin/requests}" th:classappend="${activeNav == 'requests'} ? 'active'">
+                <i class="bi bi-file-text" aria-hidden="true"></i> All requests
+            </a>
+            <a th:href="@{/admin/users}" th:classappend="${activeNav == 'users'} ? 'active'">
+                <i class="bi bi-people" aria-hidden="true"></i> Accounts
+            </a>
+            <a th:href="@{/admin/document-types}" th:classappend="${activeNav == 'documentTypes'} ? 'active'">
+                <i class="bi bi-journal-text" aria-hidden="true"></i> Document types
+            </a>
+            <a th:href="@{/admin/reports}" th:classappend="${activeNav == 'reports'} ? 'active'">
+                <i class="bi bi-clipboard-data" aria-hidden="true"></i> Reports
+            </a>
+            <a th:href="@{/admin/audit-logs}" th:classappend="${activeNav == 'audit'} ? 'active'">
+                <i class="bi bi-list-columns-reverse" aria-hidden="true"></i> Audit log
+            </a>
+            <a th:href="@{/admin/settings}" th:classappend="${activeNav == 'settings'} ? 'active'">
+                <i class="bi bi-sliders" aria-hidden="true"></i> Settings
+            </a>
+            <div class="nav-section">Account</div>
+            <a th:href="@{/notifications}" th:classappend="${activeNav == 'notifications'} ? 'active'">
+                <i class="bi bi-bell" aria-hidden="true"></i> Notifications
+                <span class="nav-count" th:if="${unreadCount > 0}" th:text="${unreadCount}">3</span>
+            </a>
+            <a th:href="@{/profile}" th:classappend="${activeNav == 'profile'} ? 'active'">
+                <i class="bi bi-person" aria-hidden="true"></i> My profile
+            </a>
+        </th:block>
+    </nav>
+
+    <div class="sidebar-foot">
+        <div th:text="${currentUser != null ? currentUser.fullName : ''}">Ana Reyes</div>
+        <div class="mono" th:text="${currentUser != null ? currentUser.displayIdentifier : ''}">EMP-0001</div>
+    </div>
+</aside>
+
+<!-- ======================================================== mobile bar -->
+<div class="mobile-bar" th:fragment="mobileBar">
+    <button type="button" class="icon-btn" data-nav-toggle aria-expanded="false" aria-controls="sidebar"
+            aria-label="Open navigation" style="color:#eef4fb">
+        <i class="bi bi-list" aria-hidden="true"></i>
+    </button>
+    <div th:replace="~{fragments/layout :: brand}"></div>
+</div>
+
+<!-- ============================================================ topbar -->
+<header class="topbar" th:fragment="topbar">
+    <div class="topbar-context">
+        <span class="eyebrow" th:text="${systemName}">School Documents Request System</span>
+    </div>
+    <div class="topbar-spacer"></div>
+
+    <a class="icon-btn" th:href="@{/notifications}"
+       th:aria-label="'Notifications, ' + ${unreadCount} + ' unread'">
+        <i class="bi bi-bell" aria-hidden="true"></i>
+        <span class="badge-dot" data-unread-badge
+              th:data-endpoint="@{/notifications/unread-count}"
+              th:hidden="${unreadCount == 0}"
+              th:text="${unreadCount > 99 ? '99+' : unreadCount}">3</span>
+    </a>
+
+    <div class="dropdown">
+        <button class="user-chip" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <span class="avatar" aria-hidden="true"
+                  th:text="${#strings.toUpperCase(#strings.substring(currentUser.firstName,0,1) + #strings.substring(currentUser.lastName,0,1))}">AR</span>
+            <span class="text-start">
+                <span class="user-chip-name d-block" th:text="${currentUser.fullName}">Ana Reyes</span>
+                <span class="user-chip-role" th:text="${currentUser.role.label}">Registrar Staff</span>
+            </span>
+            <i class="bi bi-chevron-down" aria-hidden="true" style="font-size:12px;color:#8a94a3"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+            <li><a class="dropdown-item" th:href="@{/profile}"><i class="bi bi-person me-2"></i>My profile</a></li>
+            <li><a class="dropdown-item" th:href="@{/notifications}"><i class="bi bi-bell me-2"></i>Notifications</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+                <form th:action="@{/logout}" method="post" data-skip-loading="true">
+                    <button class="dropdown-item" type="submit"><i class="bi bi-box-arrow-right me-2"></i>Sign out</button>
+                </form>
+            </li>
+        </ul>
+    </div>
+</header>
+
+<!-- ============================================================= flash -->
+<div th:fragment="flash" class="flash">
+    <div class="alert-line success" role="status" th:if="${successMessage}">
+        <i class="bi bi-check-circle" aria-hidden="true"></i>
+        <span th:text="${successMessage}"></span>
+    </div>
+    <div class="alert-line error" role="alert" th:if="${errorMessage}">
+        <i class="bi bi-exclamation-octagon" aria-hidden="true"></i>
+        <span th:text="${errorMessage}"></span>
+    </div>
+</div>
+
+<!-- =========================================================== scripts -->
+<th:block th:fragment="scripts">
+    <script th:src="@{/webjars/bootstrap/5.3.8/js/bootstrap.bundle.min.js}"></script>
+    <script th:src="@{/js/app.js}"></script>
+</th:block>
+
+<th:block th:fragment="chartScripts">
+    <script th:src="@{/webjars/chart.js/4.5.1/dist/chart.umd.min.js}"></script>
+    <script th:src="@{/js/charts.js}"></script>
+</th:block>
+
+</body>
+</html>

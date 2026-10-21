@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Document types')}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/layout :: sidebar}"></aside>
+
+    <div class="main">
+        <div th:replace="~{fragments/layout :: mobileBar}"></div>
+        <header th:replace="~{fragments/layout :: topbar}"></header>
+
+        <main class="content">
+            <div th:replace="~{fragments/layout :: flash}"></div>
+
+            <div class="page-head">
+                <div>
+                    <div class="eyebrow">Administration</div>
+                    <h1 class="page-title">Document types</h1>
+                    <p class="page-lede">The catalogue students choose from. Disable a type to stop new requests without
+                        touching existing records.</p>
+                </div>
+                <a class="btn btn-navy" th:href="@{/admin/document-types/new}">
+                    <i class="bi bi-plus-lg" aria-hidden="true"></i> Add document type
+                </a>
+            </div>
+
+            <div class="panel">
+                <div class="panel-head">
+                    <h2>Catalogue</h2>
+                    <span class="spacer"></span>
+                    <span class="pager-info" th:text="${documentTypes.size()} + ' types'">0 types</span>
+                </div>
+
+                <div class="table-wrap" th:if="${!documentTypes.isEmpty()}">
+                    <table class="data">
+                        <thead>
+                        <tr>
+                            <th>Document</th>
+                            <th>Approval</th>
+                            <th>Status</th>
+                            <th>Instructions</th>
+                            <th><span class="visually-hidden">Actions</span></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="d : ${documentTypes}">
+                            <td>
+                                <div class="cell-strong" th:text="${d.name}">Form 137</div>
+                                <div class="cell-sub" th:text="${d.description} ?: 'No description'">Description</div>
+                            </td>
+                            <td>
+                                <span class="chip chip-approval" th:if="${d.requiresAdminApproval}">
+                                    <i class="bi bi-shield-check"></i> Requires approval
+                                </span>
+                                <span class="chip chip-neutral" th:unless="${d.requiresAdminApproval}">Not required</span>
+                            </td>
+                            <td>
+                                <span class="chip" th:classappend="${d.active} ? 'chip-ready' : 'chip-rejected'"
+                                      th:text="${d.active} ? 'Active' : 'Disabled'">Active</span>
+                            </td>
+                            <td class="cell-sub" style="max-width:280px"
+                                th:text="${d.instructions} ?: '—'">Instructions</td>
+                            <td>
+                                <div class="row-actions">
+                                    <a class="btn btn-quiet btn-sm"
+                                       th:href="@{/admin/document-types/{id}/edit(id=${d.id})}">Edit</a>
+                                    <form th:action="@{/admin/document-types/{id}/toggle(id=${d.id})}" method="post"
+                                          data-skip-loading="true">
+                                        <input type="hidden" name="active" th:value="${!d.active}">
+                                        <button class="btn btn-quiet btn-sm" type="submit"
+                                                th:text="${d.active} ? 'Disable' : 'Enable'">Disable</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div th:if="${documentTypes.isEmpty()}"
+                     th:replace="~{fragments/bits :: emptyState('bi-journal-x',
+                            'No document types yet',
+                            'Add the first document students can request, such as a transcript or a good moral certificate.',
+                            '/admin/document-types/new', 'Add document type')}"></div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

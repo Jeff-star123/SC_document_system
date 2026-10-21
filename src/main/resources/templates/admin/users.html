@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Accounts')}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/layout :: sidebar}"></aside>
+
+    <div class="main">
+        <div th:replace="~{fragments/layout :: mobileBar}"></div>
+        <header th:replace="~{fragments/layout :: topbar}"></header>
+
+        <main class="content">
+            <div th:replace="~{fragments/layout :: flash}"></div>
+
+            <div class="page-head">
+                <div>
+                    <div class="eyebrow">Administration</div>
+                    <h1 class="page-title">Accounts</h1>
+                    <p class="page-lede">Students, registrar staff and administrators. Accounts are never deleted —
+                        deactivate one to lock it out.</p>
+                </div>
+                <a class="btn btn-navy" th:href="@{/admin/users/new}">
+                    <i class="bi bi-person-plus" aria-hidden="true"></i> New account
+                </a>
+            </div>
+
+            <div class="panel">
+                <div class="panel-head">
+                    <h2>Directory</h2>
+                    <span class="spacer"></span>
+                    <span class="pager-info" th:text="${page.totalElements} + ' accounts'">0 accounts</span>
+                </div>
+
+                <form class="filter-bar" th:action="@{/admin/users}" method="get">
+                    <div class="field">
+                        <label for="q">Search</label>
+                        <input class="form-control" type="search" id="q" name="q" th:value="${q}"
+                               placeholder="Name, email, or ID number">
+                    </div>
+                    <div class="field">
+                        <label for="role">Role</label>
+                        <select class="form-select" id="role" name="role" data-auto-submit>
+                            <option value="">Any role</option>
+                            <option th:each="r : ${roles}" th:value="${r}" th:text="${r.label}"
+                                    th:selected="${roleFilter != null and roleFilter == r}">Student</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="status">Status</label>
+                        <select class="form-select" id="status" name="status" data-auto-submit>
+                            <option value="">Any status</option>
+                            <option th:each="st : ${T(com.sjc.schooldocuments.user.AccountStatus).values()}"
+                                    th:value="${st}" th:text="${st}"
+                                    th:selected="${statusFilter != null and statusFilter == st}">ACTIVE</option>
+                        </select>
+                    </div>
+                    <div class="filter-actions">
+                        <button class="btn btn-navy" type="submit">
+                            <i class="bi bi-search" aria-hidden="true"></i> <span class="btn-label">Search</span>
+                        </button>
+                        <a class="btn btn-outline" th:href="@{/admin/users}">Reset</a>
+                    </div>
+                </form>
+
+                <div class="filter-summary"
+                     th:if="${(q != null and !q.isBlank()) or roleFilter != null or statusFilter != null}">
+                    <i class="bi bi-funnel" aria-hidden="true"></i>
+                    <span class="filter-chip" th:if="${q != null and !q.isBlank()}" th:text="'Search: ' + ${q}">Search</span>
+                    <span class="filter-chip" th:if="${roleFilter != null}" th:text="'Role: ' + ${roleFilter.label}">Role</span>
+                    <span class="filter-chip" th:if="${statusFilter != null}" th:text="'Status: ' + ${statusFilter}">Status</span>
+                </div>
+
+                <div class="table-wrap" th:if="${page.totalElements > 0}">
+                    <table class="data">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Identifier</th>
+                            <th>Role</th>
+                            <th>Course / dept</th>
+                            <th>Status</th>
+                            <th>Last login</th>
+                            <th><span class="visually-hidden">Actions</span></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="row : ${page.content}">
+                            <td>
+                                <div class="cell-strong" th:text="${row.fullName}">Juan Dela Cruz</div>
+                                <div class="cell-sub" th:text="${row.email}">juan@sjc.edu.ph</div>
+                            </td>
+                            <td class="mono" th:text="${row.identifier} ?: '—'">2026-0001</td>
+                            <td><span class="chip chip-neutral" th:text="${row.role.label}">Student</span></td>
+                            <td class="cell-sub"
+                                th:text="${row.courseOrDepartment} ?: '—'">BS Computer Science</td>
+                            <td>
+                                <span class="chip" th:classappend="${row.active} ? 'chip-ready' : 'chip-rejected'"
+                                      th:text="${row.accountStatus}">ACTIVE</span>
+                            </td>
+                            <td class="cell-time"
+                                th:text="${row.lastLoginAt != null ? #temporals.format(row.lastLoginAt, 'dd MMM yyyy') : 'Never'}">Never</td>
+                            <td>
+                                <div class="row-actions">
+                                    <a class="btn btn-quiet btn-sm" th:href="@{/admin/users/{id}/edit(id=${row.id})}">Edit</a>
+                                    <form th:action="@{/admin/users/{id}/toggle-active(id=${row.id})}" method="post"
+                                          data-skip-loading="true">
+                                        <input type="hidden" name="active" th:value="${!row.active}">
+                                        <button class="btn btn-quiet btn-sm" type="submit"
+                                                th:text="${row.active} ? 'Deactivate' : 'Activate'"
+                                                th:data-confirm="${row.active}
+                                                        ? 'Deactivate ' + ${row.fullName} + '? They will be signed out and cannot sign in again.'
+                                                        : 'Reactivate ' + ${row.fullName} + '?'">Deactivate</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div th:if="${page.totalElements == 0}"
+                     th:replace="~{fragments/bits :: emptyState('bi-people',
+                            'No accounts found',
+                            'No account matches the current search. Try a different name, role or status.',
+                            '/admin/users/new', 'Create an account')}"></div>
+
+                <nav class="pager" th:if="${page.totalPages > 1}" aria-label="Pagination">
+                    <span class="pager-info"
+                          th:text="'Page ' + (${page.number} + 1) + ' of ' + ${page.totalPages}">Page 1 of 3</span>
+                    <div class="pager-links">
+                        <span th:if="${page.first}" class="is-disabled">Prev</span>
+                        <a th:unless="${page.first}"
+                           th:href="@{/admin/users(q=${q}, role=${roleFilter}, status=${statusFilter}, page=${page.number - 1})}"
+                           rel="prev">Prev</a>
+                        <a th:unless="${page.last}"
+                           th:href="@{/admin/users(q=${q}, role=${roleFilter}, status=${statusFilter}, page=${page.number + 1})}"
+                           rel="next">Next</a>
+                        <span th:if="${page.last}" class="is-disabled">Next</span>
+                    </div>
+                </nav>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('My requests')}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/layout :: sidebar}"></aside>
+
+    <div class="main">
+        <div th:replace="~{fragments/layout :: mobileBar}"></div>
+        <header th:replace="~{fragments/layout :: topbar}"></header>
+
+        <main class="content">
+            <div th:replace="~{fragments/layout :: flash}"></div>
+
+            <div class="page-head">
+                <div>
+                    <div class="eyebrow">Student portal</div>
+                    <h1 class="page-title">My requests</h1>
+                    <p class="page-lede">Every document you have requested, newest first.</p>
+                </div>
+                <a class="btn btn-navy" th:href="@{/student/requests/new}">
+                    <i class="bi bi-plus-lg" aria-hidden="true"></i> New request
+                </a>
+            </div>
+
+            <div class="panel">
+                <div class="panel-head">
+                    <h2>Request history</h2>
+                    <span class="spacer"></span>
+                    <span class="pager-info" th:text="${page.totalElements} + ' total'">0 total</span>
+                </div>
+
+                <form class="filter-bar" th:action="@{/student/requests}" method="get">
+                    <div class="field">
+                        <label for="q">Search</label>
+                        <input class="form-control" type="search" id="q" name="q" th:value="${filter.q}"
+                               placeholder="Reference number">
+                    </div>
+                    <div class="field">
+                        <label for="status">Status</label>
+                        <select class="form-select" id="status" name="status" data-auto-submit>
+                            <option value="">Any status</option>
+                            <option th:each="s : ${T(com.sjc.schooldocuments.request.RequestStatus).values()}"
+                                    th:value="${s}" th:text="${s.label}"
+                                    th:selected="${filter.status != null and filter.status == s}">Pending</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="documentTypeId">Document type</label>
+                        <select class="form-select" id="documentTypeId" name="documentTypeId" data-auto-submit>
+                            <option value="">All document types</option>
+                            <option th:each="d : ${documentTypes}" th:value="${d.id}" th:text="${d.name}"
+                                    th:selected="${filter.documentTypeId != null and filter.documentTypeId == d.id}">Form 137</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="dateFrom">Submitted between</label>
+                        <div style="display:flex;gap:6px">
+                            <input class="form-control" type="date" id="dateFrom" name="dateFrom"
+                                   th:value="${filter.dateFrom}" aria-label="From date" data-auto-submit>
+                            <input class="form-control" type="date" id="dateTo" name="dateTo"
+                                   th:value="${filter.dateTo}" aria-label="To date" data-auto-submit>
+                        </div>
+                    </div>
+                    <div class="filter-actions">
+                        <button class="btn btn-navy" type="submit">
+                            <i class="bi bi-search" aria-hidden="true"></i> <span class="btn-label">Apply</span>
+                        </button>
+                        <a class="btn btn-outline" th:href="@{/student/requests}">Reset</a>
+                    </div>
+                    <input type="hidden" name="size" th:value="${filter.size}">
+                </form>
+
+                <div th:replace="~{fragments/bits :: filterSummary(${filter}, ${documentTypes})}"></div>
+
+                <div th:replace="~{fragments/bits :: requestTable(${page}, '/student/requests', '/student/requests', ${filter}, false)}"></div>
+
+                <div th:replace="~{fragments/bits :: pager(${page}, '/student/requests', ${filter})}"></div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

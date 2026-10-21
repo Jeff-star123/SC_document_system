@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Notifications')}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/layout :: sidebar}"></aside>
+
+    <div class="main">
+        <div th:replace="~{fragments/layout :: mobileBar}"></div>
+        <header th:replace="~{fragments/layout :: topbar}"></header>
+
+        <main class="content"
+              th:with="requestBase=${currentUser.role.toString() == 'STUDENT' ? '/student/requests'
+                                 : (currentUser.role.toString() == 'STAFF' ? '/staff/requests' : '/admin/requests')}">
+            <div th:replace="~{fragments/layout :: flash}"></div>
+
+            <div class="page-head">
+                <div>
+                    <div class="eyebrow">Account</div>
+                    <h1 class="page-title">Notifications</h1>
+                    <p class="page-lede">Updates about your requests and account, newest first.</p>
+                </div>
+                <form th:action="@{/notifications/read-all}" method="post">
+                    <input type="hidden" name="returnTo" value="/notifications">
+                    <button class="btn btn-outline" type="submit">
+                        <i class="bi bi-check2-all" aria-hidden="true"></i>
+                        <span class="btn-label">Mark all as read</span>
+                    </button>
+                </form>
+            </div>
+
+            <div class="panel">
+                <div class="panel-head">
+                    <h2>Inbox</h2>
+                    <span class="spacer"></span>
+                    <span class="pager-info" th:text="${notifications.totalElements} + ' notifications'">0 notifications</span>
+                </div>
+
+                <div class="panel-body tight" th:if="${notifications.totalElements > 0}">
+                    <ul class="legend-list" style="padding:0 20px">
+                        <li th:each="n : ${notifications.content}"
+                            th:classappend="${!n.read} ? 'is-unread'"
+                            th:style="${!n.read} ? 'background:#fbfcfe' : ''">
+                            <span class="legend-swatch"
+                                  th:style="${!n.read} ? 'background:var(--navy)' : 'background:var(--rule-strong)'"
+                                  aria-hidden="true"></span>
+                            <span style="text-align:left;flex:1">
+                                <span class="cell-strong d-block" th:text="${n.title}">Request ready for pick-up</span>
+                                <span class="cell-sub d-block" th:text="${n.message}">Bring your school ID.</span>
+                                <span class="d-block mt-1" th:if="${n.requestId != null}">
+                                    <a th:href="${requestBase + '/' + n.requestId}"
+                                       th:text="'View ' + ${n.referenceNumber}">View SDR-2026-000142</a>
+                                </span>
+                            </span>
+                            <span class="d-flex flex-column align-items-end gap-2">
+                                <span class="legend-count"
+                                      th:text="${#temporals.format(n.createdAt, 'dd MMM, HH:mm')}">12 Mar, 09:14</span>
+                                <form th:if="${!n.read}" th:action="@{/notifications/{id}/read(id=${n.id})}" method="post">
+                                    <input type="hidden" name="returnTo" value="/notifications">
+                                    <button class="btn btn-quiet btn-sm" type="submit">Mark read</button>
+                                </form>
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div th:if="${notifications.totalElements == 0}"
+                     th:replace="~{fragments/bits :: emptyState('bi-bell-slash',
+                            'No notifications',
+                            'When something happens to a request or your account, you will see it here.',
+                            null, null)}"></div>
+
+                <nav class="pager" th:if="${notifications.totalPages > 1}" aria-label="Pagination">
+                    <span class="pager-info"
+                          th:text="'Page ' + (${notifications.number} + 1) + ' of ' + ${notifications.totalPages}">Page 1 of 2</span>
+                    <div class="pager-links">
+                        <span th:if="${notifications.first}" class="is-disabled">Prev</span>
+                        <a th:unless="${notifications.first}"
+                           th:href="@{/notifications(page=${notifications.number - 1})}" rel="prev">Prev</a>
+                        <a th:unless="${notifications.last}"
+                           th:href="@{/notifications(page=${notifications.number + 1})}" rel="next">Next</a>
+                        <span th:if="${notifications.last}" class="is-disabled">Next</span>
+                    </div>
+                </nav>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

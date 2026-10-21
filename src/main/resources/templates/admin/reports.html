@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('System reports')}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/layout :: sidebar}"></aside>
+
+    <div class="main">
+        <div th:replace="~{fragments/layout :: mobileBar}"></div>
+        <header th:replace="~{fragments/layout :: topbar}"></header>
+
+        <main class="content">
+            <div th:replace="~{fragments/layout :: flash}"></div>
+
+            <div class="page-head">
+                <div>
+                    <div class="eyebrow">Administration</div>
+                    <h1 class="page-title">System reports</h1>
+                    <p class="page-lede">The same figures the registrar sees, across the whole school and any period.</p>
+                </div>
+                <a class="btn btn-outline"
+                   th:href="@{/admin/reports/export.csv(dateFrom=${report.dateFrom}, dateTo=${report.dateTo}, status=${filter.status}, documentTypeId=${filter.documentTypeId})}">
+                    <i class="bi bi-download" aria-hidden="true"></i> Export CSV
+                </a>
+            </div>
+
+            <div class="panel">
+                <div th:replace="~{fragments/report :: filterBar('/admin/reports', ${filter}, ${documentTypes})}"></div>
+                <div class="filter-summary">
+                    <i class="bi bi-calendar3" aria-hidden="true"></i>
+                    <span>Period</span>
+                    <span class="filter-chip"
+                          th:text="${report.dateFrom} + ' to ' + ${report.dateTo}">2026-02-15 to 2026-03-16</span>
+                </div>
+            </div>
+
+            <div th:replace="~{fragments/report :: panels(${report})}"></div>
+        </main>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+<div th:replace="~{fragments/layout :: chartScripts}"></div>
+</body>
+</html>

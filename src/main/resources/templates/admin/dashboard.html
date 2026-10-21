@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Admin dashboard')}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/layout :: sidebar}"></aside>
+
+    <div class="main">
+        <div th:replace="~{fragments/layout :: mobileBar}"></div>
+        <header th:replace="~{fragments/layout :: topbar}"></header>
+
+        <main class="content">
+            <div th:replace="~{fragments/layout :: flash}"></div>
+
+            <div class="page-head">
+                <div>
+                    <div class="eyebrow">Administration</div>
+                    <h1 class="page-title">System overview</h1>
+                    <p class="page-lede">Accounts, requests and the approval queue across the whole school.</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <a class="btn btn-outline" th:href="@{/admin/users/new}">
+                        <i class="bi bi-person-plus" aria-hidden="true"></i> New account
+                    </a>
+                    <a class="btn btn-navy" th:href="@{/admin/approvals}">
+                        <i class="bi bi-shield-check" aria-hidden="true"></i> Approval queue
+                    </a>
+                </div>
+            </div>
+
+            <div class="stat-grid">
+                <div class="stat-card is-total">
+                    <div class="stat-label">Total requests</div>
+                    <div class="stat-value" th:text="${data.totalRequests}">0</div>
+                    <div class="stat-sub" th:text="${data.awaitingApproval} + ' awaiting approval'">0 awaiting</div>
+                </div>
+                <div class="stat-card is-pending">
+                    <div class="stat-label">Pending</div>
+                    <div class="stat-value" th:text="${data.pending}">0</div>
+                </div>
+                <div class="stat-card is-processing">
+                    <div class="stat-label">Processing</div>
+                    <div class="stat-value" th:text="${data.processing}">0</div>
+                </div>
+                <div class="stat-card is-ready">
+                    <div class="stat-label">Ready for pick-up</div>
+                    <div class="stat-value" th:text="${data.ready}">0</div>
+                    <div class="stat-sub" th:text="${data.releasedThisMonth} + ' released this month'">0 released</div>
+                </div>
+            </div>
+
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Accounts</div>
+                    <div class="stat-value" th:text="${data.totalUsers}">0</div>
+                    <div class="stat-sub">
+                        <span th:text="${data.students} + ' students'">0 students</span> ·
+                        <span th:text="${data.staff} + ' staff'">0 staff</span> ·
+                        <span th:text="${data.admins} + ' admins'">0 admins</span>
+                    </div>
+                    <div class="mt-2"><a class="stat-link" th:href="@{/admin/users}">Manage accounts</a></div>
+                </div>
+                <div class="stat-card is-ready">
+                    <div class="stat-label">Approved</div>
+                    <div class="stat-value" th:text="${data.approved}">0</div>
+                </div>
+                <div class="stat-card is-rejected">
+                    <div class="stat-label">Rejected</div>
+                    <div class="stat-value" th:text="${data.rejected}">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Awaiting approval</div>
+                    <div class="stat-value" th:text="${data.awaitingApproval}">0</div>
+                    <div class="stat-sub"><a class="stat-link" th:href="@{/admin/approvals}">Review the queue</a></div>
+                </div>
+            </div>
+
+            <div class="chart-grid">
+                <div class="panel">
+                    <div class="panel-head"><h2>Monthly volume</h2></div>
+                    <div class="panel-body">
+                        <div class="chart-box">
+                            <canvas data-chart="volume-line"
+                                    th:data-labels="${#strings.listJoin(data.monthlyVolume.![label], '|')}"
+                                    th:data-values="${#strings.listJoin(data.monthlyVolume.![count], '|')}"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-head"><h2>Requests by status</h2></div>
+                    <div class="panel-body">
+                        <div class="chart-box">
+                            <canvas data-chart="status-doughnut"
+                                    th:data-labels="${#strings.listJoin(data.requestsByStatus.![label], '|')}"
+                                    th:data-values="${#strings.listJoin(data.requestsByStatus.![count], '|')}"
+                                    th:data-modifiers="${#strings.listJoin(data.requestsByStatus.![cssModifier], '|')}"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-head"><h2>Requests by document type</h2></div>
+                <div class="panel-body">
+                    <div class="chart-box">
+                        <canvas data-chart="type-bar"
+                                th:data-labels="${#strings.listJoin(data.requestsByDocumentType.![label], '|')}"
+                                th:data-values="${#strings.listJoin(data.requestsByDocumentType.![count], '|')}"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-head">
+                    <h2>Recent activity</h2>
+                    <span class="spacer"></span>
+                    <a class="btn btn-quiet btn-sm" th:href="@{/admin/audit-logs}">Full audit log</a>
+                </div>
+                <div class="panel-body tight">
+                    <div class="table-wrap" th:if="${!data.recentActivity.isEmpty()}">
+                        <table class="data">
+                            <thead>
+                            <tr><th>When</th><th>Actor</th><th>Action</th><th>Detail</th></tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="row : ${data.recentActivity}">
+                                <td class="cell-time" th:text="${#temporals.format(row.createdAt, 'dd MMM, HH:mm')}">12 Mar, 09:14</td>
+                                <td class="cell-strong" th:text="${row.actorName}">Ana Reyes</td>
+                                <td><span class="chip chip-neutral" th:text="${row.action}">REQUEST_CREATED</span></td>
+                                <td class="cell-sub" th:text="${row.description}">Created request SDR-2026-000142</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div th:if="${data.recentActivity.isEmpty()}"
+                         th:replace="~{fragments/bits :: emptyState('bi-activity',
+                                'No activity recorded yet',
+                                'Actions taken in the system will be listed here for accountability.',
+                                null, null)}"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+<div th:replace="~{fragments/layout :: chartScripts}"></div>
+</body>
+</html>

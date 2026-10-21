@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('All requests')}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/layout :: sidebar}"></aside>
+
+    <div class="main">
+        <div th:replace="~{fragments/layout :: mobileBar}"></div>
+        <header th:replace="~{fragments/layout :: topbar}"></header>
+
+        <main class="content">
+            <div th:replace="~{fragments/layout :: flash}"></div>
+
+            <div class="page-head">
+                <div>
+                    <div class="eyebrow">Administration</div>
+                    <h1 class="page-title">All requests</h1>
+                    <p class="page-lede">Every request in the system with its complete status history. Read-only.</p>
+                </div>
+                <a class="btn btn-outline" th:href="${'/admin/requests/export.csv?' + filter.toQueryString()}">
+                    <i class="bi bi-download" aria-hidden="true"></i> Export CSV
+                </a>
+            </div>
+
+            <div class="panel">
+                <div class="panel-head">
+                    <h2>Request records</h2>
+                    <span class="spacer"></span>
+                    <span class="pager-info" th:text="${page.totalElements} + ' total'">0 total</span>
+                </div>
+
+                <div th:replace="~{fragments/bits :: requestFilterBar('/admin/requests', ${filter}, ${documentTypes})}"></div>
+                <div th:replace="~{fragments/bits :: filterSummary(${filter}, ${documentTypes})}"></div>
+                <div th:replace="~{fragments/bits :: requestTable(${page}, '/admin/requests', '/admin/requests', ${filter}, true)}"></div>
+                <div th:replace="~{fragments/bits :: pager(${page}, '/admin/requests', ${filter})}"></div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

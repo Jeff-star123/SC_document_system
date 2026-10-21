@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Sign in')}"></head>
+<body>
+<div class="auth-shell">
+
+    <!-- ------------------------------------------------------ brand side -->
+    <section class="auth-brandside">
+        <div>
+            <div th:replace="~{fragments/layout :: brand}"></div>
+            <h1 class="auth-system" th:text="${systemName}">School Documents Request System</h1>
+            <p class="auth-lede" th:text="'Request, track and claim official records from ' + ${institutionName} + ' without queueing at the counter.'">
+                Request, track and claim official records without queueing at the counter.
+            </p>
+
+            <div class="auth-slip" aria-hidden="true">
+                <div class="slip-kicker">Sample claim stub</div>
+                <div class="slip-ref">SDR-2026-000142</div>
+                <div class="row-line"><span>Form 137 · 1 copy</span><span>READY</span></div>
+                <div class="row-line"><span>Submitted</span><span>12 Mar 2026</span></div>
+                <div class="row-line"><span>Claim at</span><span>Registrar, Window 3</span></div>
+            </div>
+        </div>
+
+        <p class="auth-brandfoot">
+            Office of the Registrar · Mon–Fri, 8:00 AM–5:00 PM · Bring a valid school ID when claiming.
+        </p>
+    </section>
+
+    <!-- ------------------------------------------------------- form side -->
+    <section class="auth-formside">
+        <form class="auth-form" th:action="@{/login}" method="post" novalidate>
+            <div class="eyebrow" th:text="${institutionName}">Saint Jude College Manila</div>
+            <h1 class="mt-2">Sign in to the records portal</h1>
+            <p class="page-lede">Use the email address on your account, or your student / employee number.</p>
+
+            <div class="notice notice-danger mt-3" role="alert" th:if="${loginError}">
+                <i class="bi bi-exclamation-octagon" aria-hidden="true"></i>
+                <span th:text="${loginError}">Those details did not match.</span>
+            </div>
+
+            <div class="notice notice-success mt-3" role="status" th:if="${loginNotice}">
+                <i class="bi bi-check-circle" aria-hidden="true"></i>
+                <span th:text="${loginNotice}">You have signed out.</span>
+            </div>
+
+            <div class="field mt-3">
+                <label for="username">Email or ID number</label>
+                <input class="form-control" type="text" id="username" name="username"
+                       autocomplete="username" autofocus required
+                       placeholder="juan.delacruz@sjc.edu.ph or 2026-0001">
+            </div>
+
+            <div class="field">
+                <label for="password">Password</label>
+                <div class="input-group-join">
+                    <input class="form-control" type="password" id="password" name="password"
+                           autocomplete="current-password" required placeholder="Your password">
+                    <button class="btn reveal" type="button" data-toggle-password="password"
+                            aria-label="Show password" aria-pressed="false">
+                        <i class="bi bi-eye" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </div>
+
+            <button class="btn btn-navy w-100 justify-content-center" type="submit">
+                <span class="btn-label">Sign in</span>
+            </button>
+
+            <p class="auth-switch mb-0">
+                No account yet? Accounts are created by the registrar's office — visit Window 1 with your
+                school ID. Forgot your password? Ask the registrar to reset it.
+            </p>
+        </form>
+    </section>
+</div>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

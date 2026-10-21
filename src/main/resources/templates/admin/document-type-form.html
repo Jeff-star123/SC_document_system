@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+     th:with="pageTitle=${mode == 'edit' ? 'Edit document type' : 'New document type'}">
+<head th:replace="~{fragments/layout :: head(${pageTitle})}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/layout :: sidebar}"></aside>
+
+    <div class="main">
+        <div th:replace="~{fragments/layout :: mobileBar}"></div>
+        <header th:replace="~{fragments/layout :: topbar}"></header>
+
+        <main class="content">
+            <div th:replace="~{fragments/layout :: flash}"></div>
+
+            <div class="page-head">
+                <div>
+                    <div class="eyebrow">Administration · Catalogue</div>
+                    <h1 class="page-title"
+                        th:text="${mode == 'edit' ? 'Edit document type' : 'New document type'}">New document type</h1>
+                    <p class="page-lede">How the document appears to students, and whether it needs approval first.</p>
+                </div>
+                <a class="btn btn-outline" th:href="@{/admin/document-types}">
+                    <i class="bi bi-arrow-left" aria-hidden="true"></i> Back to catalogue
+                </a>
+            </div>
+
+            <form method="post" th:action="@{/admin/document-types}" th:object="${form}" class="row g-4">
+                <div class="col-lg-8">
+                    <div class="panel">
+                        <div class="panel-head"><h2>Document details</h2></div>
+                        <div class="panel-body">
+
+                            <div class="notice notice-danger mb-3" role="alert" th:if="${errorMessage}">
+                                <i class="bi bi-exclamation-octagon" aria-hidden="true"></i>
+                                <span th:text="${errorMessage}">Something went wrong.</span>
+                            </div>
+
+                            <input type="hidden" th:field="*{id}">
+
+                            <div class="field">
+                                <label for="name">Name</label>
+                                <input class="form-control" type="text" id="name" th:field="*{name}"
+                                       placeholder="Form 137 (Permanent Record)">
+                                <div class="field-error" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Required.</div>
+                            </div>
+
+                            <div class="field">
+                                <label for="description">Description</label>
+                                <textarea class="form-control" id="description" rows="2" th:field="*{description}"
+                                          placeholder="One or two lines students will recognise."></textarea>
+                                <div class="field-error" th:if="${#fields.hasErrors('description')}" th:errors="*{description}">Too long.</div>
+                            </div>
+
+                            <div class="field">
+                                <label for="instructions">Student-facing instructions</label>
+                                <textarea class="form-control" id="instructions" rows="3" th:field="*{instructions}"
+                                          placeholder="What the student should bring or know when claiming."></textarea>
+                                <div class="hint">Shown to the student on the request form and detail page.</div>
+                                <div class="field-error" th:if="${#fields.hasErrors('instructions')}" th:errors="*{instructions}">Too long.</div>
+                            </div>
+
+                            <div class="field mb-0">
+                                <label for="internalNotes">Internal notes</label>
+                                <textarea class="form-control" id="internalNotes" rows="2" th:field="*{internalNotes}"
+                                          placeholder="Staff-only notes about processing this document."></textarea>
+                                <div class="field-error" th:if="${#fields.hasErrors('internalNotes')}" th:errors="*{internalNotes}">Too long.</div>
+                            </div>
+                        </div>
+                        <div class="panel-foot d-flex gap-2">
+                            <button class="btn btn-navy" type="submit">
+                                <i class="bi bi-check-lg" aria-hidden="true"></i>
+                                <span class="btn-label" th:text="${mode == 'edit' ? 'Save changes' : 'Add document type'}">Save</span>
+                            </button>
+                            <a class="btn btn-quiet" th:href="@{/admin/document-types}">Cancel</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="panel">
+                        <div class="panel-head"><h3>Availability & approval</h3></div>
+                        <div class="panel-body">
+                            <div class="field">
+                                <label class="checkline" for="active">
+                                    <input type="checkbox" id="active" th:field="*{active}">
+                                    <span>
+                                        <strong>Active</strong>
+                                        <span class="d-block muted">Students can request this document.</span>
+                                    </span>
+                                </label>
+                            </div>
+                            <div class="field mb-0">
+                                <label class="checkline" for="requiresAdminApproval">
+                                    <input type="checkbox" id="requiresAdminApproval" th:field="*{requiresAdminApproval}">
+                                    <span>
+                                        <strong>Requires administrator approval</strong>
+                                        <span class="d-block muted">The registrar cannot start until an administrator
+                                            approves each request.</span>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="notice notice-info">
+                        <i class="bi bi-info-circle" aria-hidden="true"></i>
+                        <span>Disabling a document type never affects requests already submitted.</span>
+                    </div>
+                </div>
+            </form>
+        </main>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

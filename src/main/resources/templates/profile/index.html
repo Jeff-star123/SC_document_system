@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('My profile')}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/layout :: sidebar}"></aside>
+
+    <div class="main">
+        <div th:replace="~{fragments/layout :: mobileBar}"></div>
+        <header th:replace="~{fragments/layout :: topbar}"></header>
+
+        <main class="content">
+            <div th:replace="~{fragments/layout :: flash}"></div>
+
+            <div class="page-head">
+                <div>
+                    <div class="eyebrow">Account</div>
+                    <h1 class="page-title">My profile</h1>
+                    <p class="page-lede">Your account details. Contact the registrar's office to correct anything that
+                        looks wrong.</p>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-lg-7">
+                    <div class="panel">
+                        <div class="panel-head"><h2>Account details</h2></div>
+                        <div class="panel-body">
+                            <div class="slip-grid" style="padding:0">
+                                <div class="slip-field">
+                                    <div class="k">Full name</div>
+                                    <div class="v" th:text="${profile.fullName}">Juan Dela Cruz</div>
+                                </div>
+                                <div class="slip-field">
+                                    <div class="k">Role</div>
+                                    <div class="v" th:text="${profile.role.label}">Student</div>
+                                </div>
+                                <div class="slip-field">
+                                    <div class="k">Email</div>
+                                    <div class="v" th:text="${profile.email}">juan@sjc.edu.ph</div>
+                                </div>
+                                <div class="slip-field">
+                                    <div class="k">Identifier</div>
+                                    <div class="v mono" th:text="${profile.displayIdentifier} ?: '—'">2026-0001</div>
+                                </div>
+                                <div class="slip-field">
+                                    <div class="k">Course / department</div>
+                                    <div class="v" th:text="${profile.courseOrDepartment} ?: '—'">BS Computer Science</div>
+                                </div>
+                                <div class="slip-field">
+                                    <div class="k">Year level / section</div>
+                                    <div class="v" th:text="${profile.yearLevelOrSection} ?: '—'">3rd Year</div>
+                                </div>
+                                <div class="slip-field">
+                                    <div class="k">Account status</div>
+                                    <div class="v">
+                                        <span class="chip"
+                                              th:classappend="${profile.accountStatus.name() == 'ACTIVE'} ? 'chip-ready' : 'chip-rejected'"
+                                              th:text="${profile.accountStatus}">ACTIVE</span>
+                                    </div>
+                                </div>
+                                <div class="slip-field">
+                                    <div class="k">Last login</div>
+                                    <div class="v"
+                                         th:text="${profile.lastLoginAt != null ? #temporals.format(profile.lastLoginAt, 'dd MMM yyyy, HH:mm') : 'This is your first visit'}">Never</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-5">
+                    <form class="panel" th:action="@{/profile/password}" method="post" th:object="${passwordForm}">
+                        <div class="panel-head"><h2>Change password</h2></div>
+                        <div class="panel-body">
+                            <div class="notice notice-danger mb-3" role="alert" th:if="${errorMessage}">
+                                <i class="bi bi-exclamation-octagon" aria-hidden="true"></i>
+                                <span th:text="${errorMessage}">Check the fields and try again.</span>
+                            </div>
+
+                            <div class="field">
+                                <label for="currentPassword">Current password</label>
+                                <input class="form-control" type="password" id="currentPassword"
+                                       th:field="*{currentPassword}" autocomplete="current-password">
+                                <div class="field-error" th:if="${#fields.hasErrors('currentPassword')}"
+                                     th:errors="*{currentPassword}">Required.</div>
+                            </div>
+
+                            <div class="field">
+                                <label for="newPassword">New password</label>
+                                <input class="form-control" type="password" id="newPassword"
+                                       th:field="*{newPassword}" autocomplete="new-password">
+                                <div class="hint">At least 10 characters.</div>
+                                <div class="field-error" th:if="${#fields.hasErrors('newPassword')}"
+                                     th:errors="*{newPassword}">Required.</div>
+                            </div>
+
+                            <div class="field">
+                                <label for="confirmPassword">Confirm new password</label>
+                                <input class="form-control" type="password" id="confirmPassword"
+                                       th:field="*{confirmPassword}" autocomplete="new-password">
+                                <div class="field-error" th:if="${#fields.hasErrors('confirmPassword')}"
+                                     th:errors="*{confirmPassword}">Required.</div>
+                            </div>
+                        </div>
+                        <div class="panel-foot">
+                            <button class="btn btn-navy" type="submit">
+                                <i class="bi bi-shield-lock" aria-hidden="true"></i>
+                                <span class="btn-label">Update password</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

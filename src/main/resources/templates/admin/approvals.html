@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Approval queue')}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/layout :: sidebar}"></aside>
+
+    <div class="main">
+        <div th:replace="~{fragments/layout :: mobileBar}"></div>
+        <header th:replace="~{fragments/layout :: topbar}"></header>
+
+        <main class="content">
+            <div th:replace="~{fragments/layout :: flash}"></div>
+
+            <div class="page-head">
+                <div>
+                    <div class="eyebrow">Administration</div>
+                    <h1 class="page-title">Approval queue</h1>
+                    <p class="page-lede">Requests for documents that require an administrator's review before the
+                        registrar may prepare them.</p>
+                </div>
+                <a class="btn btn-outline" th:href="@{/admin/requests}">
+                    <i class="bi bi-file-text" aria-hidden="true"></i> All requests
+                </a>
+            </div>
+
+            <div class="notice notice-info mb-3" th:if="${page.totalElements > 0}">
+                <i class="bi bi-info-circle" aria-hidden="true"></i>
+                <span>Open a request to approve or reject it. Your reason is recorded in the history and shown to the
+                    student.</span>
+            </div>
+
+            <div class="panel">
+                <div class="panel-head">
+                    <h2>Awaiting decision</h2>
+                    <span class="spacer"></span>
+                    <span class="pager-info" th:text="${page.totalElements} + ' waiting'">0 waiting</span>
+                </div>
+
+                <div th:replace="~{fragments/bits :: requestFilterBar('/admin/approvals', ${filter}, ${documentTypes})}"></div>
+                <div th:replace="~{fragments/bits :: requestTable(${page}, '/admin/approvals', '/admin/requests', ${filter}, true)}"></div>
+                <div th:replace="~{fragments/bits :: pager(${page}, '/admin/approvals', ${filter})}"></div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Something went wrong')}"></head>
+<body>
+<div style="min-height:100vh;display:grid;place-items:center;padding:40px 20px;background:var(--mist)">
+    <div style="max-width:560px;width:100%;text-align:center">
+        <div class="brand-mark" style="justify-content:center;margin-bottom:22px">
+            <span class="brand-seal" style="border-color:var(--rule-strong);color:var(--navy)">SJC</span>
+            <span>
+                <span class="brand-name" style="color:var(--ink)" th:text="${institutionName}">Saint Jude College Manila</span>
+                <span class="brand-sub">Records Office</span>
+            </span>
+        </div>
+
+        <div class="panel">
+            <div class="panel-body">
+                <div class="eyebrow" style="color:var(--stamp)">Unexpected error</div>
+                <h1 class="page-title mt-2">Something went wrong</h1>
+                <p class="page-lede" style="margin:8px auto 0"
+                   th:text="${message} ?: 'Something went wrong on our side. Please try again, or come back a little later.'">
+                    Something went wrong on our side.
+                </p>
+                <div class="mt-4 d-flex gap-2 justify-content-center">
+                    <a class="btn btn-navy" th:href="@{/}">
+                        <i class="bi bi-house" aria-hidden="true"></i> Back to dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <p class="muted mt-3" style="font-size:12.5px">
+            The office has been notified. No further action is needed from you.
+        </p>
+    </div>
+</div>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

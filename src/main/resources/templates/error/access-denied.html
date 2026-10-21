@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Access denied')}"></head>
+<body>
+<div style="min-height:100vh;display:grid;place-items:center;padding:40px 20px;background:var(--mist)">
+    <div style="max-width:520px;width:100%;text-align:center">
+        <div class="brand-mark" style="justify-content:center;margin-bottom:22px">
+            <span class="brand-seal" style="border-color:var(--rule-strong);color:var(--navy)">SJC</span>
+            <span>
+                <span class="brand-name" style="color:var(--ink)" th:text="${institutionName}">Saint Jude College Manila</span>
+                <span class="brand-sub">Records Office</span>
+            </span>
+        </div>
+
+        <div class="panel">
+            <div class="panel-body">
+                <div class="eyebrow" style="color:var(--stamp)">Error 403</div>
+                <h1 class="page-title mt-2">This area isn't yours to enter</h1>
+                <p class="page-lede" style="margin:8px auto 0">
+                    Your account doesn't have permission to view this page. If you think it should, ask an
+                    administrator to check your role.
+                </p>
+                <div class="mt-4 d-flex gap-2 justify-content-center">
+                    <a class="btn btn-navy" th:href="@{/}">
+                        <i class="bi bi-house" aria-hidden="true"></i> Back to dashboard
+                    </a>
+                    <form th:action="@{/logout}" method="post" data-skip-loading="true">
+                        <button class="btn btn-outline" type="submit">
+                            <i class="bi bi-box-arrow-right" aria-hidden="true"></i> Sign out
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

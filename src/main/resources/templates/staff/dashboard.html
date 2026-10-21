@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Registrar dashboard')}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/layout :: sidebar}"></aside>
+
+    <div class="main">
+        <div th:replace="~{fragments/layout :: mobileBar}"></div>
+        <header th:replace="~{fragments/layout :: topbar}"></header>
+
+        <main class="content">
+            <div th:replace="~{fragments/layout :: flash}"></div>
+
+            <div class="page-head">
+                <div>
+                    <div class="eyebrow">Registrar's office</div>
+                    <h1 class="page-title" th:text="'Good day, ' + ${currentUser.firstName}">Good day</h1>
+                    <p class="page-lede">The queue at a glance. Everything that needs a hand today.</p>
+                </div>
+                <a class="btn btn-navy" th:href="@{/staff/requests}">
+                    <i class="bi bi-list-task" aria-hidden="true"></i> Open request queue
+                </a>
+            </div>
+
+            <div class="stat-grid">
+                <div class="stat-card is-total">
+                    <div class="stat-label">Active requests</div>
+                    <div class="stat-value" th:text="${data.active}">0</div>
+                    <div class="stat-sub">Not yet released</div>
+                </div>
+                <div class="stat-card is-pending">
+                    <div class="stat-label">Ready to process</div>
+                    <div class="stat-value" th:text="${data.readyToProcess}">0</div>
+                    <div class="stat-sub">Pending, cleared for work</div>
+                </div>
+                <div class="stat-card is-processing">
+                    <div class="stat-label">Processing</div>
+                    <div class="stat-value" th:text="${data.processing}">0</div>
+                </div>
+                <div class="stat-card is-ready">
+                    <div class="stat-label">Ready for pick-up</div>
+                    <div class="stat-value" th:text="${data.ready}">0</div>
+                    <div class="stat-sub" th:text="${data.releasedThisMonth} + ' released this month'">0 released</div>
+                </div>
+            </div>
+
+            <div class="notice notice-warn mb-3" th:if="${data.awaitingApproval > 0}">
+                <i class="bi bi-shield-exclamation" aria-hidden="true"></i>
+                <div>
+                    <strong th:text="${data.awaitingApproval} + ' request(s) still need approval from an administrator.'">Some need approval</strong>
+                    <div>These cannot enter processing until an administrator decides.</div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-head">
+                    <h2>Newest requests</h2>
+                    <span class="spacer"></span>
+                    <a class="btn btn-quiet btn-sm" th:href="@{/staff/requests}">Open queue</a>
+                </div>
+                <div class="panel-body tight">
+                    <div class="table-wrap" th:if="${!data.recentRequests.isEmpty()}">
+                        <table class="data">
+                            <thead>
+                            <tr>
+                                <th>Reference</th>
+                                <th>Student</th>
+                                <th>Document</th>
+                                <th>Status</th>
+                                <th>Approval</th>
+                                <th><span class="visually-hidden">Actions</span></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="row : ${data.recentRequests}">
+                                <td><a class="cell-ref" th:href="@{/staff/requests/{id}(id=${row.id})}"
+                                       th:text="${row.referenceNumber}">SDR-2026-000142</a></td>
+                                <td>
+                                    <div class="cell-strong" th:text="${row.studentName}">Juan Dela Cruz</div>
+                                    <div class="cell-sub mono" th:text="${row.studentNumber}">2026-0001</div>
+                                </td>
+                                <td th:text="${row.documentTypeName}">Form 137</td>
+                                <td>
+                                    <span class="chip"
+                                          th:classappend="${row.status.name() == 'PENDING'} ? 'chip-pending'
+                                                           : (${row.status.name() == 'PROCESSING'} ? 'chip-processing' : 'chip-ready')"
+                                          th:text="${row.status.label}">Pending</span>
+                                </td>
+                                <td th:replace="~{fragments/bits :: approvalChip(${row.approvalStatus})}"></td>
+                                <td>
+                                    <div class="row-actions">
+                                        <a class="btn btn-quiet btn-sm" th:href="@{/staff/requests/{id}(id=${row.id})}">View</a>
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div th:if="${data.recentRequests.isEmpty()}"
+                         th:replace="~{fragments/bits :: emptyState('bi-inbox',
+                                'No requests in the queue',
+                                'When students submit document requests they will appear here for processing.',
+                                '/staff/requests', 'Refresh queue')}"></div>
+                </div>
+            </div>
+
+            <div class="panel" th:if="${!data.recentlyUpdated.isEmpty()}">
+                <div class="panel-head"><h2>Recently moved</h2></div>
+                <div class="panel-body tight">
+                    <div class="table-wrap">
+                        <table class="data">
+                            <thead>
+                            <tr>
+                                <th>Reference</th>
+                                <th>Document</th>
+                                <th>Status</th>
+                                <th>Assigned to</th>
+                                <th>Updated</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="row : ${data.recentlyUpdated}">
+                                <td><a class="cell-ref" th:href="@{/staff/requests/{id}(id=${row.id})}"
+                                       th:text="${row.referenceNumber}">SDR-2026-000142</a></td>
+                                <td th:text="${row.documentTypeName}">Form 137</td>
+                                <td>
+                                    <span class="chip"
+                                          th:classappend="${row.status.name() == 'PENDING'} ? 'chip-pending'
+                                                           : (${row.status.name() == 'PROCESSING'} ? 'chip-processing' : 'chip-ready')"
+                                          th:text="${row.status.label}">Ready</span>
+                                </td>
+                                <td th:text="${row.assignedStaffName} ?: '—'">Ana Reyes</td>
+                                <td class="cell-time"
+                                    th:text="${#temporals.format(row.updatedAt, 'dd MMM yyyy, HH:mm')}">12 Mar 2026, 09:14</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- ========================================================= report filter -->
+<form th:fragment="filterBar(action, filter, documentTypes)" class="filter-bar"
+      th:action="${action}" method="get">
+    <div class="field">
+        <label for="dateFrom">From</label>
+        <input class="form-control" type="date" id="dateFrom" name="dateFrom" th:value="${filter.dateFrom}">
+    </div>
+    <div class="field">
+        <label for="dateTo">To</label>
+        <input class="form-control" type="date" id="dateTo" name="dateTo" th:value="${filter.dateTo}">
+    </div>
+    <div class="field">
+        <label for="status">Status</label>
+        <select class="form-select" id="status" name="status">
+            <option value="">Any status</option>
+            <option th:each="s : ${T(com.sjc.schooldocuments.request.RequestStatus).values()}"
+                    th:value="${s}" th:text="${s.label}"
+                    th:selected="${filter.status != null and filter.status == s}">Pending</option>
+        </select>
+    </div>
+    <div class="field">
+        <label for="documentTypeId">Document type</label>
+        <select class="form-select" id="documentTypeId" name="documentTypeId">
+            <option value="">All document types</option>
+            <option th:each="d : ${documentTypes}" th:value="${d.id}" th:text="${d.name}"
+                    th:selected="${filter.documentTypeId != null and filter.documentTypeId == d.id}">Form 137</option>
+        </select>
+    </div>
+    <div class="filter-actions">
+        <button class="btn btn-navy" type="submit">
+            <i class="bi bi-bar-chart" aria-hidden="true"></i> <span class="btn-label">Run</span>
+        </button>
+        <a class="btn btn-outline" th:href="${action}">Reset</a>
+    </div>
+</form>
+
+<!-- =========================================================== report panels -->
+<th:block th:fragment="panels(report)">
+    <div class="stat-grid">
+        <div class="stat-card is-total">
+            <div class="stat-label">Total requests</div>
+            <div class="stat-value" th:text="${report.totalRequests}">0</div>
+        </div>
+        <div class="stat-card is-processing">
+            <div class="stat-label">Awaiting approval now</div>
+            <div class="stat-value" th:text="${report.awaitingApproval}">0</div>
+        </div>
+        <div class="stat-card is-ready">
+            <div class="stat-label">Released to students</div>
+            <div class="stat-value" th:text="${report.released}">0</div>
+        </div>
+        <div class="stat-card is-rejected">
+            <div class="stat-label">Rejected</div>
+            <div class="stat-value" th:text="${report.rejected}">0</div>
+        </div>
+    </div>
+
+    <div class="chart-grid">
+        <div class="panel">
+            <div class="panel-head"><h2>Monthly volume</h2></div>
+            <div class="panel-body">
+                <div class="chart-box">
+                    <canvas data-chart="volume-line"
+                            th:data-labels="${#strings.listJoin(report.monthly.![label], '|')}"
+                            th:data-values="${#strings.listJoin(report.monthly.![count], '|')}"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="panel">
+            <div class="panel-head"><h2>By status</h2></div>
+            <div class="panel-body">
+                <div class="chart-box">
+                    <canvas data-chart="status-doughnut"
+                            th:data-labels="${#strings.listJoin(report.byStatus.![label], '|')}"
+                            th:data-values="${#strings.listJoin(report.byStatus.![count], '|')}"
+                            th:data-modifiers="${#strings.listJoin(report.byStatus.![cssModifier], '|')}"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-head"><h2>By document type</h2></div>
+        <div class="panel-body">
+            <div class="chart-box">
+                <canvas data-chart="type-bar"
+                        th:data-labels="${#strings.listJoin(report.byDocumentType.![label], '|')}"
+                        th:data-values="${#strings.listJoin(report.byDocumentType.![count], '|')}"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="panel">
+                <div class="panel-head"><h3>Status summary</h3></div>
+                <div class="panel-body tight">
+                    <table class="data">
+                        <thead>
+                        <tr><th>Status</th><th class="text-end">Requests</th></tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="row : ${report.byStatus}">
+                            <td th:text="${row.label}">Pending</td>
+                            <td class="text-end mono" th:text="${row.count}">0</td>
+                        </tr>
+                        <tr th:if="${report.byStatus.isEmpty()}">
+                            <td colspan="2" class="muted">No data for this period.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="panel">
+                <div class="panel-head"><h3>Volume by document</h3></div>
+                <div class="panel-body tight">
+                    <table class="data">
+                        <thead>
+                        <tr><th>Document type</th><th class="text-end">Requests</th></tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="row : ${report.byDocumentType}">
+                            <td th:text="${row.label}">Form 137</td>
+                            <td class="text-end mono" th:text="${row.count}">0</td>
+                        </tr>
+                        <tr th:if="${report.byDocumentType.isEmpty()}">
+                            <td colspan="2" class="muted">No data for this period.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</th:block>
+
+</body>
+</html>

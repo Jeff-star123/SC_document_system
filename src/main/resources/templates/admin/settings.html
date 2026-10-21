@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Settings')}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/layout :: sidebar}"></aside>
+
+    <div class="main">
+        <div th:replace="~{fragments/layout :: mobileBar}"></div>
+        <header th:replace="~{fragments/layout :: topbar}"></header>
+
+        <main class="content">
+            <div th:replace="~{fragments/layout :: flash}"></div>
+
+            <div class="page-head">
+                <div>
+                    <div class="eyebrow">Administration</div>
+                    <h1 class="page-title">Settings</h1>
+                    <p class="page-lede">Contact details and office information shown to students across the system.</p>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <form class="panel" th:action="@{/admin/settings}" method="post">
+                        <div class="panel-head"><h2>Office information</h2></div>
+                        <div class="panel-body">
+                            <div class="field">
+                                <label for="pickup_location">Pick-up location</label>
+                                <input class="form-control" type="text" id="pickup_location"
+                                       name="setting_pickup_location"
+                                       th:value="${settings['pickup_location']}"
+                                       placeholder="Registrar's Office, Ground Floor">
+                                <div class="hint">Tells students where to collect their documents.</div>
+                            </div>
+
+                            <div class="field">
+                                <label for="office_hours">Office hours</label>
+                                <input class="form-control" type="text" id="office_hours"
+                                       name="setting_office_hours"
+                                       th:value="${settings['office_hours']}"
+                                       placeholder="Monday to Friday, 8:00 AM to 4:00 PM">
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="field mb-0">
+                                        <label for="contact_email">Contact email</label>
+                                        <input class="form-control" type="email" id="contact_email"
+                                               name="setting_contact_email"
+                                               th:value="${settings['contact_email']}"
+                                               placeholder="registrar@sjudemanila.edu.ph">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="field mb-0">
+                                        <label for="contact_number">Contact number</label>
+                                        <input class="form-control" type="text" id="contact_number"
+                                               name="setting_contact_number"
+                                               th:value="${settings['contact_number']}"
+                                               placeholder="(02) 8xxx xxxx">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel-foot">
+                            <button class="btn btn-navy" type="submit">
+                                <i class="bi bi-check-lg" aria-hidden="true"></i>
+                                <span class="btn-label">Save settings</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="panel">
+                        <div class="panel-head"><h3>Reference sequence</h3></div>
+                        <div class="panel-body">
+                            <p class="muted">Reference numbers follow the pattern
+                                <span class="mono">SDR-YEAR-NNNNNN</span>. The counter is managed automatically and
+                                cannot be edited here.</p>
+                            <div class="slip-field">
+                                <div class="k">Next number in line</div>
+                                <div class="v mono"
+                                     th:text="${settings['request_sequence'] != null
+                                              ? T(java.lang.Long).parseLong(settings['request_sequence']) + 1
+                                              : 1}">1</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="notice notice-info">
+                        <i class="bi bi-info-circle" aria-hidden="true"></i>
+                        <span>These details appear in student notifications and on the request slip.</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

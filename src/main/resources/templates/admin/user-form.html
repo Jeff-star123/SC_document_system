@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+     th:with="pageTitle=${mode == 'edit' ? 'Edit account' : 'New account'}">
+<head th:replace="~{fragments/layout :: head(${pageTitle})}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/layout :: sidebar}"></aside>
+
+    <div class="main">
+        <div th:replace="~{fragments/layout :: mobileBar}"></div>
+        <header th:replace="~{fragments/layout :: topbar}"></header>
+
+        <main class="content">
+            <div th:replace="~{fragments/layout :: flash}"></div>
+
+            <div class="page-head">
+                <div>
+                    <div class="eyebrow">Administration · Accounts</div>
+                    <h1 class="page-title" th:text="${mode == 'edit' ? 'Edit account' : 'New account'}">New account</h1>
+                    <p class="page-lede" th:if="${mode == 'edit'}">
+                        Update the account's details, role or status. Changing a role is recorded in the audit log.
+                    </p>
+                    <p class="page-lede" th:unless="${mode == 'edit'}">
+                        Create a sign-in for a student, registrar staff member, or administrator.
+                    </p>
+                </div>
+                <a class="btn btn-outline" th:href="@{/admin/users}">
+                    <i class="bi bi-arrow-left" aria-hidden="true"></i> Back to accounts
+                </a>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <form class="panel" method="post"
+                          th:object="${form}"
+                          th:with="postUrl=${mode == 'edit'} ? '/admin/users/' + ${form.id} : '/admin/users'"
+                          th:action="@{${postUrl}}">
+                        <div class="panel-head">
+                            <h2 th:text="${mode == 'edit' ? 'Account details' : 'Account details'}">Account details</h2>
+                        </div>
+                        <div class="panel-body">
+
+                            <div class="notice notice-danger mb-3" role="alert" th:if="${errorMessage}">
+                                <i class="bi bi-exclamation-octagon" aria-hidden="true"></i>
+                                <span th:text="${errorMessage}">Something went wrong.</span>
+                            </div>
+
+                            <div class="field">
+                                <label for="role">Role</label>
+                                <select class="form-select" id="role" th:field="*{role}">
+                                    <option th:each="r : ${roles}" th:value="${r}" th:text="${r.label}">Student</option>
+                                </select>
+                                <div class="field-error" th:if="${#fields.hasErrors('role')}" th:errors="*{role}">Role required.</div>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="field">
+                                        <label for="firstName">First name</label>
+                                        <input class="form-control" type="text" id="firstName" th:field="*{firstName}">
+                                        <div class="field-error" th:if="${#fields.hasErrors('firstName')}" th:errors="*{firstName}">Required.</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="field">
+                                        <label for="middleName">Middle name</label>
+                                        <input class="form-control" type="text" id="middleName" th:field="*{middleName}">
+                                        <div class="field-error" th:if="${#fields.hasErrors('middleName')}" th:errors="*{middleName}">Too long.</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="field">
+                                        <label for="lastName">Last name</label>
+                                        <input class="form-control" type="text" id="lastName" th:field="*{lastName}">
+                                        <div class="field-error" th:if="${#fields.hasErrors('lastName')}" th:errors="*{lastName}">Required.</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <label for="email">Email</label>
+                                <input class="form-control" type="email" id="email" th:field="*{email}"
+                                       placeholder="name@sjc.edu.ph">
+                                <div class="field-error" th:if="${#fields.hasErrors('email')}" th:errors="*{email}">Valid email required.</div>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="field">
+                                        <label for="studentNumber">Student number</label>
+                                        <input class="form-control" type="text" id="studentNumber" th:field="*{studentNumber}"
+                                               placeholder="2026-0001">
+                                        <div class="hint">Leave blank for staff and administrators.</div>
+                                        <div class="field-error" th:if="${#fields.hasErrors('studentNumber')}" th:errors="*{studentNumber}">Invalid.</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="field">
+                                        <label for="employeeNumber">Employee number</label>
+                                        <input class="form-control" type="text" id="employeeNumber" th:field="*{employeeNumber}"
+                                               placeholder="EMP-0001">
+                                        <div class="hint">Leave blank for students.</div>
+                                        <div class="field-error" th:if="${#fields.hasErrors('employeeNumber')}" th:errors="*{employeeNumber}">Invalid.</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="field">
+                                        <label for="courseOrDepartment">Course / department</label>
+                                        <input class="form-control" type="text" id="courseOrDepartment" th:field="*{courseOrDepartment}"
+                                               placeholder="BS Computer Science / Registrar">
+                                        <div class="field-error" th:if="${#fields.hasErrors('courseOrDepartment')}" th:errors="*{courseOrDepartment}">Too long.</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="field">
+                                        <label for="yearLevelOrSection">Year level / section</label>
+                                        <input class="form-control" type="text" id="yearLevelOrSection" th:field="*{yearLevelOrSection}"
+                                               placeholder="3rd Year · CS-3A">
+                                        <div class="field-error" th:if="${#fields.hasErrors('yearLevelOrSection')}" th:errors="*{yearLevelOrSection}">Too long.</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- create-only: initial password -->
+                            <th:block th:if="${mode != 'edit'}">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="field">
+                                            <label for="password">Initial password</label>
+                                            <input class="form-control" type="password" id="password" th:field="*{password}"
+                                                   autocomplete="new-password">
+                                            <div class="hint">At least 10 characters. Share it in person.</div>
+                                            <div class="field-error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}">Required.</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="field">
+                                            <label for="confirmPassword">Confirm password</label>
+                                            <input class="form-control" type="password" id="confirmPassword"
+                                                   th:field="*{confirmPassword}" autocomplete="new-password">
+                                            <div class="field-error" th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}">Required.</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </th:block>
+
+                            <!-- edit-only: account status -->
+                            <div class="field" th:if="${mode == 'edit'}">
+                                <label for="accountStatus">Account status</label>
+                                <select class="form-select" id="accountStatus" th:field="*{accountStatus}">
+                                    <option th:each="st : ${statuses}" th:value="${st}" th:text="${st}">ACTIVE</option>
+                                </select>
+                                <div class="hint">Inactive accounts cannot sign in.</div>
+                                <div class="field-error" th:if="${#fields.hasErrors('accountStatus')}" th:errors="*{accountStatus}">Required.</div>
+                            </div>
+                        </div>
+
+                        <div class="panel-foot d-flex gap-2">
+                            <button class="btn btn-navy" type="submit">
+                                <i class="bi bi-check-lg" aria-hidden="true"></i>
+                                <span class="btn-label" th:text="${mode == 'edit' ? 'Save changes' : 'Create account'}">Save</span>
+                            </button>
+                            <a class="btn btn-quiet" th:href="@{/admin/users}">Cancel</a>
+                        </div>
+                    </form>
+
+                    <!-- edit-only: reset password -->
+                    <div class="panel" th:if="${mode == 'edit'}">
+                        <div class="panel-head"><h3>Reset password</h3></div>
+                        <form th:action="@{/admin/users/{id}/reset-password(id=${form.id})}" method="post">
+                            <div class="panel-body">
+                                <p class="muted">Set a new password for this account without knowing the old one. The
+                                    holder should change it after signing in.</p>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <div class="field mb-0">
+                                            <label for="newPassword">New password</label>
+                                            <input class="form-control" type="password" id="newPassword" name="newPassword"
+                                                   autocomplete="new-password">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="field mb-0">
+                                            <label for="resetConfirmPassword">Confirm password</label>
+                                            <input class="form-control" type="password" id="resetConfirmPassword"
+                                                   name="confirmPassword" autocomplete="new-password">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="panel-foot">
+                                <button class="btn btn-outline" type="submit"
+                                        data-confirm="Reset this account's password?">
+                                    <span class="btn-label">Reset password</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="panel" th:if="${mode == 'edit' and account != null}">
+                        <div class="panel-head"><h3>Account snapshot</h3></div>
+                        <div class="panel-body">
+                            <div class="slip-field">
+                                <div class="k">Name</div>
+                                <div class="v" th:text="${account.fullName}">Juan Dela Cruz</div>
+                            </div>
+                            <div class="slip-field mt-3">
+                                <div class="k">Identifier</div>
+                                <div class="v mono" th:text="${account.displayIdentifier} ?: '—'">2026-0001</div>
+                            </div>
+                            <div class="slip-field mt-3">
+                                <div class="k">Created</div>
+                                <div class="v" th:text="${#temporals.format(account.createdAt, 'dd MMM yyyy')}">12 Mar 2026</div>
+                            </div>
+                            <div class="slip-field mt-3">
+                                <div class="k">Last login</div>
+                                <div class="v"
+                                     th:text="${account.lastLoginAt != null ? #temporals.format(account.lastLoginAt, 'dd MMM yyyy, HH:mm') : 'Never'}">Never</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="notice notice-info" th:unless="${mode == 'edit'}">
+                        <i class="bi bi-shield-lock" aria-hidden="true"></i>
+                        <div>
+                            <strong>Handle credentials carefully.</strong>
+                            <div>Deliver the initial password in person. Never send it over chat or email.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

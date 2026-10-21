@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Dashboard')}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/layout :: sidebar}"></aside>
+
+    <div class="main">
+        <div th:replace="~{fragments/layout :: mobileBar}"></div>
+        <header th:replace="~{fragments/layout :: topbar}"></header>
+
+        <main class="content">
+            <div th:replace="~{fragments/layout :: flash}"></div>
+
+            <div class="page-head">
+                <div>
+                    <div class="eyebrow">Student portal</div>
+                    <h1 class="page-title" th:text="'Welcome back, ' + ${currentUser.firstName}">Welcome back</h1>
+                    <p class="page-lede">Track your document requests and collect what's ready.</p>
+                </div>
+                <a class="btn btn-navy" th:href="@{/student/requests/new}">
+                    <i class="bi bi-plus-lg" aria-hidden="true"></i> New request
+                </a>
+            </div>
+
+            <div class="stat-grid">
+                <div class="stat-card is-total">
+                    <div class="stat-label">Total requests</div>
+                    <div class="stat-value" th:text="${data.total}">0</div>
+                </div>
+                <div class="stat-card is-pending">
+                    <div class="stat-label">Pending</div>
+                    <div class="stat-value" th:text="${data.pending}">0</div>
+                    <div class="stat-sub">Waiting for the registrar</div>
+                </div>
+                <div class="stat-card is-processing">
+                    <div class="stat-label">Processing</div>
+                    <div class="stat-value" th:text="${data.processing}">0</div>
+                    <div class="stat-sub">Being prepared</div>
+                </div>
+                <div class="stat-card is-ready">
+                    <div class="stat-label">Ready for pick-up</div>
+                    <div class="stat-value" th:text="${data.ready}">0</div>
+                    <div class="stat-sub">Collect at the registrar</div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-head">
+                    <h2>Recent requests</h2>
+                    <span class="spacer"></span>
+                    <a class="btn btn-quiet btn-sm" th:href="@{/student/requests}">View all</a>
+                </div>
+                <div class="panel-body tight">
+                    <div class="table-wrap" th:if="${!data.recentRequests.isEmpty()}">
+                        <table class="data">
+                            <thead>
+                            <tr>
+                                <th>Reference</th>
+                                <th>Document</th>
+                                <th>Status</th>
+                                <th>Submitted</th>
+                                <th><span class="visually-hidden">Actions</span></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="row : ${data.recentRequests}">
+                                <td><a class="cell-ref" th:href="@{/student/requests/{id}(id=${row.id})}"
+                                       th:text="${row.referenceNumber}">SDR-2026-000142</a></td>
+                                <td>
+                                    <div class="cell-strong" th:text="${row.documentTypeName}">Form 137</div>
+                                    <div class="cell-sub" th:text="${row.quantity > 1 ? row.quantity + ' copies' : '1 copy'}">1 copy</div>
+                                </td>
+                                <td>
+                                    <span class="chip"
+                                          th:classappend="${row.status.name() == 'PENDING'} ? 'chip-pending'
+                                                           : (${row.status.name() == 'PROCESSING'} ? 'chip-processing' : 'chip-ready')"
+                                          th:text="${row.status.label}">Pending</span>
+                                </td>
+                                <td class="cell-time" th:text="${#temporals.format(row.createdAt, 'dd MMM yyyy')}">12 Mar 2026</td>
+                                <td>
+                                    <div class="row-actions">
+                                        <a class="btn btn-quiet btn-sm" th:href="@{/student/requests/{id}(id=${row.id})}">View</a>
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div th:if="${data.recentRequests.isEmpty()}"
+                         th:replace="~{fragments/bits :: emptyState('bi-file-earmark-plus',
+                                'No requests yet',
+                                'When you request a document it will show up here, along with everything the registrar does with it.',
+                                '/student/requests/new', 'Request a document')}"></div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-head">
+                    <h2>Latest updates</h2>
+                    <span class="spacer"></span>
+                    <a class="btn btn-quiet btn-sm" th:href="@{/notifications}">
+                        All notifications
+                        <span class="nav-count" th:if="${data.unreadNotifications > 0}"
+                              style="background:var(--navy-tint);color:var(--navy)"
+                              th:text="${data.unreadNotifications}">2</span>
+                    </a>
+                </div>
+                <div class="panel-body tight">
+                    <ul class="legend-list" style="padding:8px 20px" th:if="${!data.latestNotifications.isEmpty()}">
+                        <li th:each="n : ${data.latestNotifications}">
+                            <span style="text-align:left">
+                                <span class="cell-strong d-block" th:text="${n.title}">Request ready for pick-up</span>
+                                <span class="cell-sub d-block" th:text="${n.message}">Bring your school ID to Window 3.</span>
+                            </span>
+                            <span class="legend-count" th:text="${#temporals.format(n.createdAt, 'dd MMM, HH:mm')}">12 Mar, 09:14</span>
+                        </li>
+                    </ul>
+                    <div th:if="${data.latestNotifications.isEmpty()}"
+                         th:replace="~{fragments/bits :: emptyState('bi-bell-slash',
+                                'No notifications yet',
+                                'Updates about your requests will appear here as the registrar works through them.',
+                                null, null)}"></div>
+                </div>
+            </div>
+
+            <ol class="steps mt-4">
+                <li th:classappend="${data.total == 0} ? 'is-current'">
+                    <div class="step-no">STEP 01</div>
+                    <div class="step-name">Submit a request</div>
+                    <div class="muted">Choose a document from the catalogue and tell us why you need it.</div>
+                </li>
+                <li th:classappend="${data.processing > 0} ? 'is-current'">
+                    <div class="step-no">STEP 02</div>
+                    <div class="step-name">We prepare it</div>
+                    <div class="muted">The registrar verifies your record and prepares the document.</div>
+                </li>
+                <li th:classappend="${data.ready > 0} ? 'is-current'">
+                    <div class="step-no">STEP 03</div>
+                    <div class="step-name">Pick it up</div>
+                    <div class="muted">Show your claim stub and a valid ID at the registrar's window.</div>
+                </li>
+            </ol>
+        </main>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

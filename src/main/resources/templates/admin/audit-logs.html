@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Audit log')}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/layout :: sidebar}"></aside>
+
+    <div class="main">
+        <div th:replace="~{fragments/layout :: mobileBar}"></div>
+        <header th:replace="~{fragments/layout :: topbar}"></header>
+
+        <main class="content">
+            <div th:replace="~{fragments/layout :: flash}"></div>
+
+            <div class="page-head">
+                <div>
+                    <div class="eyebrow">Administration</div>
+                    <h1 class="page-title">Audit log</h1>
+                    <p class="page-lede">A permanent, read-only trail of who did what, and when.</p>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-head">
+                    <h2>Activity</h2>
+                    <span class="spacer"></span>
+                    <span class="pager-info" th:text="${page.totalElements} + ' entries'">0 entries</span>
+                </div>
+
+                <form class="filter-bar" th:action="@{/admin/audit-logs}" method="get">
+                    <div class="field">
+                        <label for="action">Action</label>
+                        <select class="form-select" id="action" name="action" data-auto-submit>
+                            <option value="">All actions</option>
+                            <option th:each="a : ${actions}" th:value="${a}" th:text="${a}"
+                                    th:selected="${actionFilter != null and actionFilter == a}">REQUEST_CREATED</option>
+                        </select>
+                    </div>
+                    <div class="filter-actions">
+                        <button class="btn btn-navy" type="submit">
+                            <i class="bi bi-funnel" aria-hidden="true"></i> <span class="btn-label">Filter</span>
+                        </button>
+                        <a class="btn btn-outline" th:href="@{/admin/audit-logs}">Reset</a>
+                    </div>
+                </form>
+
+                <div class="table-wrap" th:if="${page.totalElements > 0}">
+                    <table class="data">
+                        <thead>
+                        <tr>
+                            <th>When</th>
+                            <th>Actor</th>
+                            <th>Action</th>
+                            <th>Entity</th>
+                            <th>Detail</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="row : ${page.content}">
+                            <td class="cell-time"
+                                th:text="${#temporals.format(row.createdAt, 'dd MMM yyyy, HH:mm')}">12 Mar 2026, 09:14</td>
+                            <td class="cell-strong" th:text="${row.actorName}">Ana Reyes</td>
+                            <td><span class="chip chip-neutral" th:text="${row.action}">REQUEST_CREATED</span></td>
+                            <td class="cell-sub mono"
+                                th:text="${row.entityType} + (${row.entityId != null} ? ' #' + ${row.entityId} : '')">DocumentRequest #142</td>
+                            <td class="cell-sub" th:text="${row.description}">Created request SDR-2026-000142</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div th:if="${page.totalElements == 0}"
+                     th:replace="~{fragments/bits :: emptyState('bi-list-columns-reverse',
+                            'No audit entries',
+                            'No activity matches this filter. Actions taken in the system will be listed here.',
+                            null, null)}"></div>
+
+                <nav class="pager" th:if="${page.totalPages > 1}" aria-label="Pagination">
+                    <span class="pager-info"
+                          th:text="'Page ' + (${page.number} + 1) + ' of ' + ${page.totalPages}">Page 1 of 3</span>
+                    <div class="pager-links">
+                        <span th:if="${page.first}" class="is-disabled">Prev</span>
+                        <a th:unless="${page.first}"
+                           th:href="@{/admin/audit-logs(action=${actionFilter}, page=${page.number - 1})}"
+                           rel="prev">Prev</a>
+                        <a th:unless="${page.last}"
+                           th:href="@{/admin/audit-logs(action=${actionFilter}, page=${page.number + 1})}"
+                           rel="next">Next</a>
+                        <span th:if="${page.last}" class="is-disabled">Next</span>
+                    </div>
+                </nav>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

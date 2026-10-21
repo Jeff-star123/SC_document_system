@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- ========================================================= status chip -->
+<span th:fragment="statusChip(status)" class="chip"
+      th:classappend="${status.name() == 'PENDING'} ? 'chip-pending'
+                       : (${status.name() == 'PROCESSING'} ? 'chip-processing' : 'chip-ready')"
+      th:text="${status.label}">Pending</span>
+
+<!-- ======================================================= approval chip -->
+<th:block th:fragment="approvalChip(approval)">
+    <span th:if="${approval.name() == 'NOT_REQUIRED'}" class="muted">—</span>
+    <span th:unless="${approval.name() == 'NOT_REQUIRED'}" class="chip"
+          th:classappend="${approval.name() == 'PENDING'} ? 'chip-approval'
+                           : (${approval.name() == 'APPROVED'} ? 'chip-ready' : 'chip-rejected')"
+          th:text="${approval.label}">Approved</span>
+</th:block>
+
+<!-- ============================================================== pager -->
+<nav th:fragment="pager(page, basePath, filter)" class="pager" th:if="${page.totalPages > 1}"
+     aria-label="Pagination">
+    <span class="pager-info"
+          th:text="'Showing ' + (${page.number} * ${page.size} + 1)
+                   + ' to ' + (${page.number} * ${page.size} + ${page.numberOfElements})
+                   + ' of ' + ${page.totalElements} + ' requests'">Showing 1 to 10 of 42 requests</span>
+    <div class="pager-links">
+        <span th:if="${page.first}" class="is-disabled">Prev</span>
+        <a th:unless="${page.first}" th:href="${basePath + '?' + filter.queryWithPage(page.number - 1)}"
+           rel="prev">Prev</a>
+
+        <th:block th:with="from=${T(java.lang.Math).max(0, page.number - 2)},
+                           to=${T(java.lang.Math).min(page.totalPages - 1, page.number + 2)}">
+            <a th:each="i : ${#numbers.sequence(from, to)}"
+               th:href="${basePath + '?' + filter.queryWithPage(i)}"
+               th:classappend="${i == page.number} ? 'is-current'"
+               th:aria-current="${i == page.number} ? 'page' : null"
+               th:text="${i + 1}">1</a>
+        </th:block>
+
+        <a th:unless="${page.last}" th:href="${basePath + '?' + filter.queryWithPage(page.number + 1)}"
+           rel="next">Next</a>
+        <span th:if="${page.last}" class="is-disabled">Next</span>
+    </div>
+</nav>
+
+<!-- ========================================================= empty state -->
+<div th:fragment="emptyState(icon, title, message, actionHref, actionLabel)" class="empty">
+    <i th:class="'bi ' + ${icon}" aria-hidden="true"></i>
+    <h3 th:text="${title}">Nothing here yet</h3>
+    <p th:text="${message}">When there is something to show, it appears here.</p>
+    <a th:if="${actionHref != null}" class="btn btn-navy" th:href="${actionHref}"
+       th:text="${actionLabel}">Get started</a>
+</div>
+
+<!-- ======================================================== request table -->
+<th:block th:fragment="requestTable(page, sortBase, detailBase, filter, showStudent)">
+    <div class="table-wrap" th:if="${page.totalElements > 0}">
+        <table class="data">
+            <thead>
+            <tr>
+                <th>
+                    <a th:href="${sortBase + '?' + filter.sortLink('reference')}">
+                        Reference
+                        <i th:if="${filter.isSortedBy('reference')}"
+                           th:class="${filter.isSortAscending()} ? 'bi bi-caret-up-fill' : 'bi bi-caret-down-fill'"></i>
+                    </a>
+                </th>
+                <th th:if="${showStudent}">
+                    <a th:href="${sortBase + '?' + filter.sortLink('student')}">
+                        Student
+                        <i th:if="${filter.isSortedBy('student')}"
+                           th:class="${filter.isSortAscending()} ? 'bi bi-caret-up-fill' : 'bi bi-caret-down-fill'"></i>
+                    </a>
+                </th>
+                <th>
+                    <a th:href="${sortBase + '?' + filter.sortLink('documentType')}">
+                        Document
+                        <i th:if="${filter.isSortedBy('documentType')}"
+                           th:class="${filter.isSortAscending()} ? 'bi bi-caret-up-fill' : 'bi bi-caret-down-fill'"></i>
+                    </a>
+                </th>
+                <th>
+                    <a th:href="${sortBase + '?' + filter.sortLink('status')}">
+                        Status
+                        <i th:if="${filter.isSortedBy('status')}"
+                           th:class="${filter.isSortAscending()} ? 'bi bi-caret-up-fill' : 'bi bi-caret-down-fill'"></i>
+                    </a>
+                </th>
+                <th>Approval</th>
+                <th>
+                    <a th:href="${sortBase + '?' + filter.sortLink('createdAt')}">
+                        Submitted
+                        <i th:if="${filter.isSortedBy('createdAt')}"
+                           th:class="${filter.isSortAscending()} ? 'bi bi-caret-up-fill' : 'bi bi-caret-down-fill'"></i>
+                    </a>
+                </th>
+                <th><span class="visually-hidden">Actions</span></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="row : ${page.content}">
+                <td>
+                    <a class="cell-ref" th:href="${detailBase + '/' + row.id}"
+                       th:text="${row.referenceNumber}">SDR-2026-000123</a>
+                </td>
+                <td th:if="${showStudent}">
+                    <div class="cell-strong" th:text="${row.studentName}">Juan Dela Cruz</div>
+                    <div class="cell-sub mono" th:text="${row.studentNumber}">2026-0001</div>
+                </td>
+                <td>
+                    <div class="cell-strong" th:text="${row.documentTypeName}">Form 137</div>
+                    <div class="cell-sub" th:text="${row.quantity > 1 ? row.quantity + ' copies' : '1 copy'}">1 copy</div>
+                </td>
+                <td>
+                    <span class="chip"
+                          th:classappend="${row.status.name() == 'PENDING'} ? 'chip-pending'
+                                           : (${row.status.name() == 'PROCESSING'} ? 'chip-processing' : 'chip-ready')"
+                          th:text="${row.status.label}">Pending</span>
+                    <div class="cell-sub" th:if="${row.claimed}" style="margin-top:4px">Released</div>
+                </td>
+                <td>
+                    <span th:if="${row.approvalStatus.name() == 'NOT_REQUIRED'}" class="muted">—</span>
+                    <span th:unless="${row.approvalStatus.name() == 'NOT_REQUIRED'}" class="chip"
+                          th:classappend="${row.approvalStatus.name() == 'PENDING'} ? 'chip-approval'
+                                           : (${row.approvalStatus.name() == 'APPROVED'} ? 'chip-ready' : 'chip-rejected')"
+                          th:text="${row.approvalStatus.label}">Approved</span>
+                </td>
+                <td class="cell-time" th:text="${#temporals.format(row.createdAt, 'dd MMM yyyy')}">12 Mar 2026</td>
+                <td>
+                    <div class="row-actions">
+                        <a class="btn btn-quiet btn-sm" th:href="${detailBase + '/' + row.id}">View</a>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div th:if="${page.totalElements == 0}"
+         th:replace="~{fragments/bits :: emptyState('bi-inbox', 'No requests found',
+                        'Nothing matches the current filters yet. Clear a filter or two, or wait for new submissions.',
+                        null, null)}"></div>
+</th:block>
+
+<!-- ========================================================= filter bar -->
+<form th:fragment="requestFilterBar(action, filter, documentTypes)" class="filter-bar"
+      th:action="${action}" method="get">
+    <div class="field">
+        <label for="q">Search</label>
+        <input class="form-control" type="search" id="q" name="q" th:value="${filter.q}"
+               placeholder="Reference number, name, or ID number">
+    </div>
+    <div class="field">
+        <label for="status">Status</label>
+        <select class="form-select" id="status" name="status" data-auto-submit>
+            <option value="">Any status</option>
+            <option th:each="s : ${T(com.sjc.schooldocuments.request.RequestStatus).values()}"
+                    th:value="${s}" th:text="${s.label}"
+                    th:selected="${filter.status != null and filter.status == s}">Pending
+            </option>
+        </select>
+    </div>
+    <div class="field">
+        <label for="documentTypeId">Document type</label>
+        <select class="form-select" id="documentTypeId" name="documentTypeId" data-auto-submit>
+            <option value="">All document types</option>
+            <option th:each="d : ${documentTypes}" th:value="${d.id}" th:text="${d.name}"
+                    th:selected="${filter.documentTypeId != null and filter.documentTypeId == d.id}">Form 137
+            </option>
+        </select>
+    </div>
+    <div class="field">
+        <label for="dateFrom">Submitted between</label>
+        <div style="display:flex;gap:6px">
+            <input class="form-control" type="date" id="dateFrom" name="dateFrom" th:value="${filter.dateFrom}"
+                   aria-label="From date" data-auto-submit>
+            <input class="form-control" type="date" id="dateTo" name="dateTo" th:value="${filter.dateTo}"
+                   aria-label="To date" data-auto-submit>
+        </div>
+    </div>
+    <div class="filter-actions">
+        <button class="btn btn-navy" type="submit">
+            <i class="bi bi-search" aria-hidden="true"></i> <span class="btn-label">Apply</span>
+        </button>
+        <a class="btn btn-outline" th:href="${action}">Reset</a>
+    </div>
+    <input type="hidden" name="size" th:value="${filter.size}">
+    <input type="hidden" name="sort" th:value="${filter.sort}">
+    <input type="hidden" name="dir" th:value="${filter.dir}">
+    <input type="hidden" name="awaitingApprovalOnly" value="true"
+           th:if="${filter.awaitingApprovalOnly}">
+</form>
+
+<!-- ====================================================== filter summary -->
+<div th:fragment="filterSummary(filter, documentTypes)" class="filter-summary"
+     th:if="${filter.hasFilters()}">
+    <i class="bi bi-funnel" aria-hidden="true"></i>
+    <span>Filtered by</span>
+    <span class="filter-chip" th:if="${filter.q != null and !filter.q.isBlank()}"
+          th:text="'Search: ' + ${filter.q}">Search: Juan</span>
+    <span class="filter-chip" th:if="${filter.status != null}"
+          th:text="'Status: ' + ${filter.status.label}">Status: Pending</span>
+    <th:block th:if="${filter.documentTypeId != null}">
+        <span class="filter-chip" th:each="d : ${documentTypes}" th:if="${d.id == filter.documentTypeId}"
+              th:text="'Document: ' + ${d.name}">Document: Form 137</span>
+    </th:block>
+    <span class="filter-chip"
+          th:if="${filter.dateFrom != null or filter.dateTo != null}"
+          th:text="'Dates: ' + (${filter.dateFrom != null ? filter.dateFrom : 'start'})
+                   + ' to ' + (${filter.dateTo != null ? filter.dateTo : 'today'})">Dates: 2026-01-01 to today</span>
+    <span class="filter-chip" th:if="${filter.awaitingApprovalOnly}">Awaiting approval only</span>
+</div>
+
+<!-- ============================================================ timeline -->
+<ol th:fragment="timeline(history)" class="timeline">
+        <div class="stamp-time"
+             th:text="${#temporals.format(entry.createdAt, 'dd MMM yyyy, HH:mm')}">12 Mar 2026, 09:14</div>
+        <div class="stamp-what">
+            <th:block th:if="${entry.statusChanged}">
+                <span th:if="${entry.oldStatus == null}"
+                      th:text="'Submitted · ' + ${entry.newStatus}">Submitted · PENDING</span>
+                <span th:unless="${entry.oldStatus == null}"
+                      th:text="${entry.oldStatus} + ' → ' + ${entry.newStatus}">PENDING → PROCESSING</span>
+            </th:block>
+            <th:block th:unless="${entry.statusChanged}">
+                <span th:if="${entry.approvalChanged}"
+                      th:text="'Approval · ' + ${entry.newApprovalStatus}">Approval · APPROVED</span>
+                <span th:unless="${entry.approvalChanged}">Record updated</span>
+            </th:block>
+        </div>
+        <div class="stamp-note" th:if="${entry.remarks}" th:text="${entry.remarks}">Remarks go here.</div>
+        <div class="stamp-by" th:text="${entry.actorName + ' · ' + entry.actorRole}">Ana Reyes · Registrar Staff</div>
+    </li>
+</ol>
+
+</body>
+</html>

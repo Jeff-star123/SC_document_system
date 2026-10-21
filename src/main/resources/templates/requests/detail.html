@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${request.referenceNumber})}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/layout :: sidebar}"></aside>
+
+    <div class="main">
+        <div th:replace="~{fragments/layout :: mobileBar}"></div>
+        <header th:replace="~{fragments/layout :: topbar}"></header>
+
+        <main class="content"
+              th:with="isStudent=${viewerRole.name() == 'STUDENT'},
+                       isStaff=${viewerRole.name() == 'STAFF'},
+                       isAdmin=${viewerRole.name() == 'ADMIN'},
+                       basePath=${viewerRole.name() == 'STUDENT' ? '/student/requests'
+                                 : (viewerRole.name() == 'STAFF' ? '/staff/requests' : '/admin/requests')}">
+            <div th:replace="~{fragments/layout :: flash}"></div>
+
+            <div class="page-head">
+                <div>
+                    <div class="eyebrow">Request record</div>
+                    <h1 class="page-title">Claim stub</h1>
+                    <p class="page-lede">A complete record of this request, from submission to release.</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline" type="button" data-print>
+                        <i class="bi bi-printer" aria-hidden="true"></i> Print
+                    </button>
+                    <a class="btn btn-outline" th:href="${basePath}">
+                        <i class="bi bi-arrow-left" aria-hidden="true"></i> Back
+                    </a>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <!-- ------------------------------------------------ left: slip -->
+                <div class="col-lg-8">
+                    <div class="slip">
+                        <div class="slip-head">
+                            <div>
+                                <div class="slip-kicker">Reference number</div>
+                                <div class="slip-ref" th:text="${request.referenceNumber}">SDR-2026-000142</div>
+                                <div class="slip-doc" th:text="${request.documentTypeName}">Form 137</div>
+                            </div>
+                            <span class="stamp"
+                                  th:classappend="${request.isRejected()} ? 'stamp--rejected'
+                                                   : (${request.status.name() == 'PROCESSING'} ? 'stamp--processing'
+                                                   : (${request.status.name() == 'READY_FOR_PICKUP'} ? 'stamp--ready' : 'stamp--pending'))"
+                                  th:text="${request.isRejected()} ? 'Rejected'
+                                           : (${request.status.name() == 'READY_FOR_PICKUP'} ? 'Ready'
+                                           : ${request.status.label})">Pending</span>
+                        </div>
+
+                        <div class="slip-grid">
+                            <div class="slip-field">
+                                <div class="k">Student</div>
+                                <div class="v" th:text="${request.studentName}">Juan Dela Cruz</div>
+                            </div>
+                            <div class="slip-field">
+                                <div class="k">Student number</div>
+                                <div class="v mono" th:text="${request.studentNumber} ?: '—'">2026-0001</div>
+                            </div>
+                            <div class="slip-field">
+                                <div class="k">Course / department</div>
+                                <div class="v" th:text="${request.studentCourse} ?: '—'">BS Computer Science</div>
+                            </div>
+                            <div class="slip-field">
+                                <div class="k">Year level / section</div>
+                                <div class="v" th:text="${request.studentYearLevel} ?: '—'">3rd Year</div>
+                            </div>
+                            <div class="slip-field">
+                                <div class="k">Copies requested</div>
+                                <div class="v" th:text="${request.quantity}">1</div>
+                            </div>
+                            <div class="slip-field">
+                                <div class="k">Submitted</div>
+                                <div class="v" th:text="${#temporals.format(request.createdAt, 'dd MMM yyyy, HH:mm')}">12 Mar 2026, 09:14</div>
+                            </div>
+                            <div class="slip-field" style="grid-column:1/-1">
+                                <div class="k">Purpose</div>
+                                <div class="v" th:text="${request.purpose}">Scholarship application</div>
+                            </div>
+                            <div class="slip-field" style="grid-column:1/-1" th:if="${request.additionalDetails}">
+                                <div class="k">Additional details</div>
+                                <div class="v" th:text="${request.additionalDetails}">Please include certification of units.</div>
+                            </div>
+                        </div>
+
+                        <div class="slip-foot">
+                            <span>
+                                <span class="eyebrow">Status</span>
+                                <span class="ms-1"
+                                      th:replace="~{fragments/bits :: statusChip(${request.status})}"></span>
+                            </span>
+                            <span th:if="${!request.isRejected()}">
+                                <span class="eyebrow">Approval</span>
+                                <span class="ms-1"
+                                      th:replace="~{fragments/bits :: approvalChip(${request.approvalStatus})}"></span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- rejection banner -->
+                    <div class="notice notice-danger mt-3" th:if="${request.isRejected()}">
+                        <i class="bi bi-x-octagon" aria-hidden="true"></i>
+                        <div>
+                            <strong>This request was rejected.</strong>
+                            <div th:text="${request.rejectionReason}">The record has an outstanding balance.</div>
+                            <div class="muted mt-1"
+                                 th:if="${request.approvedByName != null}"
+                                 th:text="'Reviewed by ' + ${request.approvedByName} + ' on '
+                                          + ${#temporals.format(request.approvedAt, 'dd MMM yyyy')}">Reviewed by ...</div>
+                        </div>
+                    </div>
+
+                    <!-- ready banner -->
+                    <div class="notice notice-success mt-3"
+                         th:if="${request.status.name() == 'READY_FOR_PICKUP' and !request.isRejected()}">
+                        <i class="bi bi-check-circle" aria-hidden="true"></i>
+                        <div>
+                            <strong>Ready for pick-up.</strong>
+                            <div th:text="${request.pickupInstructions} ?: 'Bring a valid ID to the registrar.'">Bring your school ID to Window 3.</div>
+                        </div>
+                    </div>
+
+                    <!-- approved note -->
+                    <div class="notice notice-info mt-3"
+                         th:if="${request.approvalStatus.name() == 'APPROVED'}">
+                        <i class="bi bi-shield-check" aria-hidden="true"></i>
+                        <div>
+                            <strong>Approved by the administrator.</strong>
+                            <div th:text="'Decision by ' + ${request.approvedByName} + ' on '
+                                          + ${#temporals.format(request.approvedAt, 'dd MMM yyyy')}">Decision by ...</div>
+                        </div>
+                    </div>
+
+                    <!-- staff notes (staff/admin only) -->
+                    <div class="panel" th:if="${(isStaff or isAdmin) and request.staffNotes != null}">
+                        <div class="panel-head"><h3>Internal notes</h3></div>
+                        <div class="panel-body">
+                            <p class="mb-0" th:text="${request.staffNotes}">Notes</p>
+                        </div>
+                    </div>
+
+                    <!-- staff actions -->
+                    <th:block th:if="${isStaff}">
+                        <div class="panel"
+                             th:if="${request.status.name() == 'PENDING' and !request.isRejected() and request.approvalStatus.name() != 'PENDING'}">
+                            <div class="panel-head"><h3>Start processing</h3></div>
+                            <form th:action="@{/staff/requests/{id}/process(id=${request.id})}" method="post">
+                                <div class="panel-body">
+                                    <div class="field">
+                                        <label for="remarks">Remarks (optional)</label>
+                                        <input class="form-control" type="text" id="remarks" name="remarks"
+                                               placeholder="e.g. verifying form 137 with the records section">
+                                    </div>
+                                    <div class="field mb-0">
+                                        <label for="processNotes">Internal notes (optional)</label>
+                                        <textarea class="form-control" id="processNotes" name="staffNotes" rows="2"
+                                                  placeholder="Only staff and administrators can see this."></textarea>
+                                    </div>
+                                </div>
+                                <div class="panel-foot">
+                                    <button class="btn btn-navy" type="submit">
+                                        <span class="btn-label">Move to processing</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="panel" th:if="${request.status.name() == 'PROCESSING'}">
+                            <div class="panel-head"><h3>Mark ready for pick-up</h3></div>
+                            <form th:action="@{/staff/requests/{id}/ready(id=${request.id})}" method="post">
+                                <div class="panel-body">
+                                    <div class="field">
+                                        <label for="pickupInstructions">Pick-up instructions</label>
+                                        <textarea class="form-control" id="pickupInstructions" name="pickupInstructions"
+                                                  rows="3" required
+                                                  placeholder="Bring a valid school ID to Window 3, Mon–Fri, 8am–5pm.">Bring a valid school ID to the registrar, Window 3.</textarea>
+                                        <div class="hint">The student's notification carries this text word for word.</div>
+                                    </div>
+                                    <div class="field mb-0">
+                                        <label for="readyNotes">Internal notes (optional)</label>
+                                        <textarea class="form-control" id="readyNotes" name="staffNotes" rows="2"></textarea>
+                                    </div>
+                                </div>
+                                <div class="panel-foot">
+                                    <button class="btn btn-stamp" type="submit">
+                                        <span class="btn-label">Mark ready</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="panel"
+                             th:if="${request.status.name() == 'READY_FOR_PICKUP' and !request.isClaimed()}">
+                            <div class="panel-head"><h3>Record physical release</h3></div>
+                            <form th:action="@{/staff/requests/{id}/release(id=${request.id})}" method="post">
+                                <div class="panel-body">
+                                    <p class="muted">Optional supplement. The student-facing status does not change.</p>
+                                    <div class="row g-3">
+                                        <div class="col-sm-4">
+                                            <div class="field mb-0">
+                                                <label for="claimedOn">Claimed on</label>
+                                                <input class="form-control" type="date" id="claimedOn" name="claimedOn">
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-8">
+                                            <div class="field mb-0">
+                                                <label for="releaseRemarks">Remarks</label>
+                                                <input class="form-control" type="text" id="releaseRemarks" name="remarks"
+                                                       placeholder="e.g. claimed by the student in person; ID verified">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="panel-foot">
+                                    <button class="btn btn-outline" type="submit">
+                                        <span class="btn-label">Record release</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="panel">
+                            <div class="panel-head"><h3>Internal notes</h3></div>
+                            <form th:action="@{/staff/requests/{id}/notes(id=${request.id})}" method="post">
+                                <div class="panel-body">
+                                    <textarea class="form-control" name="staffNotes" rows="3"
+                                              placeholder="Visible to staff and administrators only."
+                                              th:text="${request.staffNotes}">Notes</textarea>
+                                </div>
+                                <div class="panel-foot">
+                                    <button class="btn btn-outline" type="submit">
+                                        <span class="btn-label">Save notes</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </th:block>
+
+                    <!-- admin decision -->
+                    <div class="panel"
+                         th:if="${isAdmin and request.approvalStatus.name() == 'PENDING'}">
+                        <div class="panel-head"><h3>Administrative decision</h3></div>
+                        <form th:action="@{/admin/approvals/{id}(id=${request.id})}" method="post">
+                            <div class="panel-body">
+                                <p class="muted">This document type requires an administrator's approval before the
+                                    registrar may process it.</p>
+                                <div class="field">
+                                    <label for="decisionRemarks">Remarks (optional)</label>
+                                    <input class="form-control" type="text" id="decisionRemarks" name="remarks"
+                                           placeholder="Recorded in the history for everyone to see.">
+                                </div>
+                                <div class="field mb-0">
+                                    <label for="reason">Reason (required when rejecting)</label>
+                                    <textarea class="form-control" id="reason" name="reason" rows="2"
+                                              placeholder="Explain why this request is being rejected."></textarea>
+                                </div>
+                            </div>
+                            <div class="panel-foot d-flex gap-2">
+                                <button class="btn btn-navy" type="submit" name="approve" value="true">
+                                    <i class="bi bi-check-lg" aria-hidden="true"></i>
+                                    <span class="btn-label">Approve</span>
+                                </button>
+                                <button class="btn btn-stamp" type="submit" name="approve" value="false"
+                                        data-confirm="Reject this request? The student will be told the reason.">
+                                    <i class="bi bi-x-lg" aria-hidden="true"></i>
+                                    <span class="btn-label">Reject</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- ------------------------------------------- right: history -->
+                <div class="col-lg-4">
+                    <div class="panel">
+                        <div class="panel-head"><h3>Status history</h3></div>
+                        <div class="panel-body">
+                            <ol class="timeline" th:if="${!request.history.isEmpty()}">
+                                <li th:each="entry, it : ${request.history}"
+                                    th:classappend="${it.last} ? 'is-current'">
+                                    <div class="stamp-time"
+                                         th:text="${#temporals.format(entry.createdAt, 'dd MMM yyyy, HH:mm')}">12 Mar 2026, 09:14</div>
+                                    <div class="stamp-what">
+                                        <th:block th:if="${entry.statusChanged}">
+                                            <span th:if="${entry.oldStatus == null}"
+                                                  th:text="'Submitted · ' + ${entry.newStatus}">Submitted</span>
+                                            <span th:unless="${entry.oldStatus == null}"
+                                                  th:text="${entry.oldStatus} + ' → ' + ${entry.newStatus}">PENDING → PROCESSING</span>
+                                        </th:block>
+                                        <th:block th:unless="${entry.statusChanged}">
+                                            <span th:if="${entry.approvalChanged}"
+                                                  th:text="'Approval · ' + ${entry.newApprovalStatus}">Approval</span>
+                                            <span th:unless="${entry.approvalChanged}">Record updated</span>
+                                        </th:block>
+                                    </div>
+                                    <div class="stamp-note" th:if="${entry.remarks}" th:text="${entry.remarks}">Remarks</div>
+                                    <div class="stamp-by"
+                                         th:text="${entry.actorName + ' · ' + entry.actorRole}">Ana Reyes · Registrar Staff</div>
+                                </li>
+                            </ol>
+                            <div th:if="${request.history.isEmpty()}"
+                                 th:replace="~{fragments/bits :: emptyState('bi-clock-history',
+                                        'No history yet', 'Status changes will appear here as they happen.', null, null)}"></div>
+                        </div>
+                    </div>
+
+                    <div class="panel" th:if="${request.documentTypeInstructions != null}">
+                        <div class="panel-head"><h3>Document guidance</h3></div>
+                        <div class="panel-body">
+                            <p class="mb-0" th:text="${request.documentTypeInstructions}">Instructions.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('New request')}"></head>
+<body>
+<div class="app-shell">
+    <aside th:replace="~{fragments/layout :: sidebar}"></aside>
+
+    <div class="main">
+        <div th:replace="~{fragments/layout :: mobileBar}"></div>
+        <header th:replace="~{fragments/layout :: topbar}"></header>
+
+        <main class="content">
+            <div th:replace="~{fragments/layout :: flash}"></div>
+
+            <div class="page-head">
+                <div>
+                    <div class="eyebrow">Student portal</div>
+                    <h1 class="page-title">Request a document</h1>
+                    <p class="page-lede">Tell us what you need and why. You'll get a tracking number and updates as
+                        the registrar works through it.</p>
+                </div>
+                <a class="btn btn-outline" th:href="@{/student/requests}">
+                    <i class="bi bi-arrow-left" aria-hidden="true"></i> Back to my requests
+                </a>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-lg-8">
+                    <form class="panel" th:action="@{/student/requests}" method="post" th:object="${form}">
+                        <div class="panel-head">
+                            <h2>Request details</h2>
+                        </div>
+                        <div class="panel-body">
+
+                            <div class="notice notice-danger mb-3" role="alert" th:if="${errorMessage}">
+                                <i class="bi bi-exclamation-octagon" aria-hidden="true"></i>
+                                <span th:text="${errorMessage}">Something went wrong.</span>
+                            </div>
+
+                            <div class="field">
+                                <span class="form-label" id="docTypeLabel">Which document do you need?</span>
+                                <div class="option-list" th:if="${!documentTypes.isEmpty()}"
+                                     role="radiogroup" aria-labelledby="docTypeLabel">
+                                    <label class="option-card" th:each="d : ${documentTypes}">
+                                        <input type="radio" th:field="*{documentTypeId}" th:value="${d.id}">
+                                        <span>
+                                            <span class="oc-name" th:text="${d.name}">Form 137</span>
+                                            <span class="oc-desc d-block"
+                                                  th:text="${d.description} ?: 'No description provided.'">Description</span>
+                                            <span class="oc-meta">
+                                                <span class="chip chip-neutral"
+                                                      th:if="${d.requiresAdminApproval}">
+                                                    <i class="bi bi-shield-check"></i> Needs approval
+                                                </span>
+                                                <span class="chip chip-neutral" th:unless="${d.requiresAdminApproval}">
+                                                    No approval needed
+                                                </span>
+                                            </span>
+                                        </span>
+                                    </label>
+                                </div>
+                                <div class="notice notice-warn" th:if="${documentTypes.isEmpty()}">
+                                    <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+                                    <span>No document types are available right now. Please try again later or ask the
+                                        registrar's office.</span>
+                                </div>
+                                <div class="field-error" th:if="${#fields.hasErrors('documentTypeId')}"
+                                     th:errors="*{documentTypeId}">Choose a document.</div>
+                            </div>
+
+                            <div class="field">
+                                <label for="purpose">Purpose</label>
+                                <textarea class="form-control" id="purpose" rows="3" th:field="*{purpose}"
+                                          placeholder="e.g. for a scholarship application, board exam, or transfer"></textarea>
+                                <div class="hint">The registrar may ask for supporting proof if the purpose is unclear.</div>
+                                <div class="field-error" th:if="${#fields.hasErrors('purpose')}"
+                                     th:errors="*{purpose}">Purpose is required.</div>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-sm-4">
+                                    <div class="field">
+                                        <label for="quantity">Copies</label>
+                                        <select class="form-select" id="quantity" th:field="*{quantity}">
+                                            <option th:each="n : ${#numbers.sequence(1, 5)}" th:value="${n}"
+                                                    th:text="${n}">1</option>
+                                        </select>
+                                        <div class="hint">Up to 5 copies per request.</div>
+                                        <div class="field-error" th:if="${#fields.hasErrors('quantity')}"
+                                             th:errors="*{quantity}">Invalid quantity.</div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-8">
+                                    <div class="field">
+                                        <label for="additionalDetails">Anything else? (optional)</label>
+                                        <input class="form-control" type="text" id="additionalDetails"
+                                               th:field="*{additionalDetails}"
+                                               placeholder="e.g. include a certification of units earned">
+                                        <div class="field-error" th:if="${#fields.hasErrors('additionalDetails')}"
+                                             th:errors="*{additionalDetails}">Too long.</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="field">
+                                <label class="checkline" for="confirmAccurate">
+                                    <input type="checkbox" id="confirmAccurate" th:field="*{confirmAccurate}">
+                                    <span>I confirm the information above is accurate, and that I am the student named on
+                                        this account.</span>
+                                </label>
+                                <div class="field-error" th:if="${#fields.hasErrors('confirmAccurate')}"
+                                     th:errors="*{confirmAccurate}">Please confirm.</div>
+                            </div>
+
+                            <div class="form-actions">
+                                <button class="btn btn-navy" type="submit" th:disabled="${documentTypes.isEmpty()}">
+                                    <i class="bi bi-send" aria-hidden="true"></i>
+                                    <span class="btn-label">Submit request</span>
+                                </button>
+                                <a class="btn btn-quiet" th:href="@{/student/dashboard}">Cancel</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="slip">
+                        <div class="slip-head">
+                            <div>
+                                <div class="slip-kicker">Claim stub preview</div>
+                                <div class="slip-ref">SDR-—</div>
+                                <div class="slip-doc">Generated on submit</div>
+                            </div>
+                            <span class="stamp stamp--pending">Draft</span>
+                        </div>
+                        <div class="slip-grid">
+                            <div class="slip-field">
+                                <div class="k">Student</div>
+                                <div class="v" th:text="${student.fullName}">Juan Dela Cruz</div>
+                            </div>
+                            <div class="slip-field">
+                                <div class="k">Student number</div>
+                                <div class="v mono" th:text="${student.studentNumber} ?: '—'">2026-0001</div>
+                            </div>
+                            <div class="slip-field">
+                                <div class="k">Course / section</div>
+                                <div class="v"
+                                     th:text="${student.courseOrDepartment} ?: '—'">BS Computer Science</div>
+                            </div>
+                            <div class="slip-field">
+                                <div class="k">Contact email</div>
+                                <div class="v" th:text="${student.email}">juan@sjc.edu.ph</div>
+                            </div>
+                        </div>
+                        <div class="slip-foot">
+                            <span>Keep this reference. You'll need it at the counter.</span>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="panel-head"><h3>What happens next</h3></div>
+                        <div class="panel-body">
+                            <ol class="timeline">
+                                <li>
+                                    <div class="stamp-what">You submit</div>
+                                    <div class="stamp-note">You get a reference number immediately.</div>
+                                </li>
+                                <li>
+                                    <div class="stamp-what">The registrar reviews</div>
+                                    <div class="stamp-note">Some documents need a record check or an administrator's approval.</div>
+                                </li>
+                                <li>
+                                    <div class="stamp-what">Ready for pick-up</div>
+                                    <div class="stamp-note">You're notified with the pick-up window and what to bring.</div>
+                                </li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: scripts}"></div>
+</body>
+</html>
